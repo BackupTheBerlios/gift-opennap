@@ -18,7 +18,7 @@
 #ifndef __OPN_PROTOCOL_HANDLERS_H
 #define __OPN_PROTOCOL_HANDLERS_H
 
-OPN_HANDLER(error);
+OPN_HANDLER(null);
 
 OPN_HANDLER(login_error);
 OPN_HANDLER(login_ack);
@@ -27,6 +27,7 @@ OPN_HANDLER(search_result);
 OPN_HANDLER(search_finished);
 
 OPN_HANDLER(download_ack);
+OPN_HANDLER(download_error);
 
 OPN_HANDLER(stats);
 

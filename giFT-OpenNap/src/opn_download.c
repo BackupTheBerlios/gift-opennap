@@ -27,7 +27,7 @@ BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 	char buf[PATH_MAX + 128];
 	BOOL ret;
 
-	if (!(download = malloc(sizeof(OpnDownload))))
+	if (!(download = opn_download_new()))
 		return FALSE;
 
 	download->chunk = chunk;
@@ -46,7 +46,7 @@ BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 	if (!(packet = opn_packet_new(OPN_CMD_DOWNLOAD_REQUEST,
 	                              buf, strlen(buf))))
 		return FALSE;
-
+	
 	ret = opn_packet_send(packet, session->con);
 	opn_packet_free(packet);
 	
@@ -83,19 +83,20 @@ void opn_download_free(OpnDownload *dl)
 	if (dl->con)
 		tcp_close(dl->con);
 
+	opn_url_free(dl->url);
 	free(dl);
 }
 
 static void on_download_read_data(int fd, input_id input, OpnDownload *download)
 {
-	unsigned char buf[2048];
+	uint8_t buf[2048];
 	int bytes;
 	
 	if (net_sock_error(fd)) {
 		opn_download_free(download);
 		return;
 	}
-
+	
 	if ((bytes = tcp_recv(download->con, buf, sizeof(buf))) <= 0)
 		opn_download_free(download);
 
@@ -105,7 +106,7 @@ static void on_download_read_data(int fd, input_id input, OpnDownload *download)
 
 static void on_download_read_filesize(int fd, input_id input, OpnDownload *download)
 {
-	unsigned char buf[128];
+	uint8_t buf[128];
 	int bytes, i;
 	uint32_t size = 0;
 	
@@ -126,7 +127,7 @@ static void on_download_read_filesize(int fd, input_id input, OpnDownload *downl
 
 	for (i = 0; isdigit(buf[i]) && size < download->url->size; i++)
 		size = (size * 10) + (buf[i] - '0');
-
+	
 	tcp_recv(download->con, buf, i);
 
 	input_add(fd, download, INPUT_READ,
@@ -141,7 +142,7 @@ static void on_download_write(int fd, input_id input, OpnDownload *download)
 		opn_download_free(download);
 		return;
 	}
-
+	
 	input_remove(input);
 
 	tcp_send(download->con, "GET", 3);
@@ -164,7 +165,7 @@ static void on_download_connect(int fd, input_id input, OpnDownload *download)
 		opn_download_free(download);
 		return;
 	}
-
+	
 	input_remove(input);
 
 	if (tcp_recv(download->con, &c, 1) <= 0 || c != '1')
@@ -177,7 +178,7 @@ static void on_download_connect(int fd, input_id input, OpnDownload *download)
 void opn_download_start(OpnDownload *download)
 {
 	assert(download);
-
+	
 	if (!(download->con = tcp_open(download->url->client.ip,
 	                               download->url->client.port, FALSE)))
 		return;

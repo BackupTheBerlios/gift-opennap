@@ -44,8 +44,7 @@ static BOOL opn_connect(timer_id *timer)
 	OpnNode *node;
 	List *l;
 
-	if (list_length(OPENNAP->sessions) >=
-	    config_get_int(OPENNAP->cfg, "main/max_connections=15"))
+	if (list_length(OPENNAP->sessions) >= OPENNAP_MAX_CONNECTIONS)
 		return TRUE;
 	
 	for (l = OPENNAP->nodelist->nodes; l; l = l->next) {
@@ -158,9 +157,11 @@ static void gift_cb_destroy(Protocol *p)
 
 	for (l = OPENNAP->sessions; l; l = l->next)
 		opn_session_free((OpnSession *) l->data);
+
+	for (l = OPENNAP->searches; l; l = l->next)
+		opn_search_free((OpnSearch *) l->data);
 	
 	opn_nodelist_free(OPENNAP->nodelist);
-	/* FIXME free OPENNAP->searches */
 	free(OPENNAP);
 }
 
@@ -190,10 +191,10 @@ BOOL OpenNap_init(Protocol *p)
 	if (protocol_compat(LIBGIFTPROTO_VERSION))
 		return FALSE;
 
-	/* tell your debugger to break here.
-	 * only works on x86 and GLibC 2
+	/* tell our debugger to insert a breakpoint here
+	 * this only works on x86 and GLibC 2
 	 */
-#ifdef OPENNAP_DEBUG \
+#if defined OPENNAP_DEBUG \
 	&& defined (__i386__) && defined (__GNUC__) && __GNUC__ >= 2
 	__asm__ __volatile__ ("int $03");
 #endif

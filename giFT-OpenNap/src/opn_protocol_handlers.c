@@ -20,13 +20,13 @@
 #include "opn_download.h"
 #include "opn_search.h"
 
+OPN_HANDLER(null)
+{
+}
+
 OPN_HANDLER(login_error)
 {
 	assert(udata);
-
-#ifdef OPENNAP_DEBUG
-	printf("login err: %s\n", data);
-#endif
 
 	opn_session_free((OpnSession *) udata);
 }
@@ -39,13 +39,6 @@ OPN_HANDLER(login_ack)
 	
 	session->state = OPN_SESSION_STATE_CONNECTED;
 	session->node->state = OPN_NODE_STATE_ONLINE;
-}
-
-OPN_HANDLER(error)
-{
-#ifdef OPENNAP_DEBUG
-	printf("general err: %s\n", data);
-#endif
 }
 
 OPN_HANDLER(stats)
@@ -93,7 +86,7 @@ static char *get_directory(char *path)
 
 	assert(path);
 
-	snprintf(buf, get_filename(path) - path, "%s", path);
+	snprintf(buf, get_filename(path) - path, path);
 
 	return strdup(buf);
 }
@@ -113,10 +106,9 @@ char *my_file_unix_path (char *host_path)
 		unix_path[1] = host_path[0];
 	}
 
-	for (ptr = unix_path; *ptr; ptr++) {
+	for (ptr = unix_path; *ptr; ptr++)
 		if (*ptr == '\\')
 			*ptr = '/';
-	}
 
 	return unix_path;
 }
@@ -159,23 +151,24 @@ OPN_HANDLER(search_result)
 	
 	assert(search->event);
 
-	share_init(&share, file);
+	share_init(&share, path);
 	share_set_root(&share, root, strlen(root));
 	share.size = filesize;
 	share_set_meta(&share, "Bitrate", bitrate);
 	share_set_meta(&share, "Frequency", frequency);
 	share_set_meta(&share, "Length", length);
 
-	opn_url_set_file_data(&url, file, filesize);
-	opn_url_set_client_data(&url, user, ip, 0);
-	opn_url_set_server_data(&url, session->node->ip,
-			session->node->port);
+	opn_url_set_file(&url, file, filesize);
+	opn_url_set_client(&url, user, ip, 0);
+	opn_url_set_server(&url, session->node->ip, session->node->port);
 
 	opn_proto->search_result(opn_proto, search->event,
 			user, NULL, opn_url_serialize(&url),
 			1, &share);
 
 	share_finish(&share);
+
+	timer_reset(search->timer);
 }
 
 OPN_HANDLER(search_finished)
@@ -190,7 +183,7 @@ OPN_HANDLER(search_finished)
 
 		opn_search_unref(search);
 	} else {
-		/* FIXME */
+		/* those will be handled by search->timer :) */
 	}
 }
 
@@ -201,12 +194,12 @@ OPN_HANDLER(download_ack)
 	char user[64], file[PATH_MAX + 1];
 	in_addr_t ip;
 	in_port_t port;
-
+	
 	sscanf(data, "%63s %u %hu \"%[^\n]\"",
 	       user, &ip, &port, file);
 
-	opn_url_set_file_data(&url, file, 0);
-	opn_url_set_client_data(&url, user, ip, port);
+	opn_url_set_file(&url, file, 0);
+	opn_url_set_client(&url, user, ip, port);
 
 	/* if port is 0 => user is firewalled
 	 * currently not supported
@@ -216,5 +209,10 @@ OPN_HANDLER(download_ack)
 		return;
 
 	opn_download_start(download);
+}
+
+OPN_HANDLER(download_error)
+{
+	/* FIXME */
 }
 

@@ -111,7 +111,7 @@ OpnSession *opn_session_find(OpnUrl *url)
 
 	assert(url);
 	
-	for (l = OPENNAP->searches; l; l = l->next) {
+	for (l = OPENNAP->sessions; l; l = l->next) {
 		session = (OpnSession *) l->data;
 
 		if (session->node->ip == url->server.ip

@@ -33,20 +33,20 @@ typedef struct {
 	char file[PATH_MAX + 1];
 	uint32_t size;
 
-	char serialized[PATH_MAX + 256];
+	char serialized[(PATH_MAX * 3) + 256];
 } OpnUrl;
 
 OpnUrl *opn_url_new();
+void opn_url_free(OpnUrl *url);
 
-void opn_url_set_file_data(OpnUrl *url, char *file, uint32_t size);
-void opn_url_set_client_data(OpnUrl *url, char *user, in_addr_t ip,
+void opn_url_set_file(OpnUrl *url, char *file, uint32_t size);
+void opn_url_set_client(OpnUrl *url, char *user, in_addr_t ip,
                              in_port_t port);
 
-void opn_url_set_server_data(OpnUrl *url, in_addr_t ip, in_port_t port);
+void opn_url_set_server(OpnUrl *url, in_addr_t ip, in_port_t port);
 
 OpnUrl *opn_url_unserialize(char *data);
 char *opn_url_serialize(OpnUrl *url);
-void opn_url_free(OpnUrl *url);
 
 #endif
 

@@ -20,6 +20,13 @@
 
 #define OPN_MAX_SEARCH_RESULTS 512
 
+static BOOL search_remove(OpnSearch *search)
+{
+	opn_search_free(search);
+
+	return FALSE;
+}
+
 OpnSearch *opn_search_new()
 {
 	OpnSearch *search;
@@ -30,7 +37,9 @@ OpnSearch *opn_search_new()
 	memset(search, 0, sizeof(OpnSearch));
 
 	opn_search_ref(search);
-	
+	search->timer = timer_add(90 * SECONDS, (TimerCallback) search_remove, search);
+	OPENNAP->searches = list_prepend(OPENNAP->searches, search);
+
 	return search;
 }
 
@@ -38,7 +47,10 @@ void opn_search_free(OpnSearch *search)
 {
 	if (!search)
 		return;
-	
+
+	timer_remove(search->timer);
+
+	OPENNAP->searches = list_remove(OPENNAP->searches, search);
 	opn_proto->search_complete(opn_proto, search->event);
 	free(search);
 }
@@ -57,38 +69,47 @@ uint32_t opn_search_unref(OpnSearch *search)
 		return 0;
 
 	if (!--search->ref) {
-		OPENNAP->searches = list_remove(OPENNAP->searches, search);
 		opn_search_free(search);
 		return 0;
 	} else
 		return search->ref;
 }
 
+/* Checks whether a file matches a query string
+ * @param file
+ * @param query
+ * @return TRUE if the file matches the query
+ */
 static BOOL file_cmp_query(char *file, char *query)
 {
-	char *tmp, *token;
+	char *ptr, *tmp, *token;
 
 	assert(query);
 	assert(file);
 
 	if (string_isempty(query))
-		return TRUE;
+		return FALSE;
 
 	if (!strchr(query, ' '))
 		return (strcasestr(file, query) != NULL);
 	
-	tmp = strdup(query);
+	ptr = tmp = strdup(query);
 
 	while ((token = string_sep(&tmp, " ")))
 		if (strcasestr(file, token)) {
-			free(tmp);
-			return FALSE;
+			free(ptr);
+			return TRUE;
 		}
 
-	free(tmp);
-	return TRUE;
+	free(ptr);
+
+	return FALSE;
 }
 
+/* Returns the OpnSearch object that belongs to a file
+ * @param file
+ * @return The OpnSearch object, if found, else NULL
+ */
 OpnSearch *opn_search_find(char *file)
 {
 	OpnSearch *search;
@@ -100,7 +121,6 @@ OpnSearch *opn_search_find(char *file)
 	for (l = OPENNAP->searches; l; l = l->next) {
 		search = (OpnSearch *) l->data;
 
-		printf("%s|%s [%s]\n", search->query, search->exclude, file);
 		match_query = file_cmp_query(file, search->query);
 		match_excl = file_cmp_query(file, search->exclude);
 		
@@ -108,12 +128,11 @@ OpnSearch *opn_search_find(char *file)
 			return search;
 	}
 
-	printf("sux!!!\n");
 	return NULL;
 }
 
 BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
-                   char *realm, Dataset *meta)
+                    char *realm, Dataset *meta)
 {
 	OpnSearch *search;
 	OpnPacket *packet;
@@ -124,10 +143,8 @@ BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 	if (!opn_is_connected || !(search = opn_search_new()))
 		return FALSE;
 
-	OPENNAP->searches = list_prepend(OPENNAP->searches, search);
-
-	snprintf(search->query, sizeof(search->query), "%s", query);
-	snprintf(search->exclude, sizeof(search->exclude), "%s", exclude);
+	snprintf(search->query, sizeof(search->query), query);
+	snprintf(search->exclude, sizeof(search->exclude), exclude);
 	search->event = event;
 	
 	for (l = OPENNAP->sessions; l; l = l->next) {

@@ -59,8 +59,15 @@ extern Protocol *opn_proto;
 #define OPENNAP ((OpnPlugin *) opn_proto->udata)
 #define IS_ONLINE() (OPENNAP && OPENNAP->session && OPENNAP->session->node)
 
-#define OPENNAP_USERNAME config_get_str(OPENNAP->cfg, "main/username")
-#define OPENNAP_DATAPORT config_get_int(OPENNAP->cfg, "main/dataport=6699")
+#define OPENNAP_USERNAME \
+	config_get_str(OPENNAP->cfg, "main/username")
+	
+#define OPENNAP_DATAPORT \
+	config_get_int(OPENNAP->cfg, "main/dataport=6699")
+	
+#define OPENNAP_MAX_CONNECTIONS \
+	config_get_int(OPENNAP->cfg, "main/max_connections=15")
+
 #define OPENNAP_CLIENTNAME "giFT-OpenNap"
 
 #ifdef WORDS_BIGENDIAN

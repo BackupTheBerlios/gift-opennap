@@ -82,10 +82,9 @@ void opn_packet_free(OpnPacket *packet)
  * @param packet The OpnPacket which should be serialized
  * @return A pointer to the serialized data. This should not be freed!
  */
-static unsigned char *packet_serialize(OpnPacket *packet, long *ssize)
+static uint8_t *packet_serialize(OpnPacket *packet, long *ssize)
 {
 	uint16_t foo;
-	int bar;
 	
 	if (!packet)
 		return NULL;
@@ -117,7 +116,7 @@ static unsigned char *packet_serialize(OpnPacket *packet, long *ssize)
  * @param size Amount of bytes to unserialize
  * @return The newly created OpnPacket
  */
-OpnPacket *opn_packet_unserialize(unsigned char *data, uint16_t size)
+OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size)
 {
 	OpnPacket *packet;
 
@@ -155,7 +154,7 @@ OpnPacket *opn_packet_unserialize(unsigned char *data, uint16_t size)
  */
 BOOL opn_packet_send(OpnPacket *packet, TCPC *con)
 {
-	unsigned char *data;
+	uint8_t *data;
 	long len = 0;
 
 	if (!(data = packet_serialize(packet, &len)))
@@ -174,14 +173,14 @@ BOOL opn_packet_send(OpnPacket *packet, TCPC *con)
 BOOL opn_packet_recv(TCPC *con, void *udata)
 {
 	OpnPacket *packet;
-	unsigned char buf[2048];
+	uint8_t buf[2048];
 	int bytes;
 	uint16_t len;
 
 	/* get the length field of the message:
 	 * always in little-endian format
 	 */
-	tcp_peek(con, (unsigned char *) &len, 2);
+	tcp_peek(con, (uint8_t *) &len, 2);
 	
 	len = MIN(BSWAP16(len) + OPN_PACKET_HEADER_LEN, sizeof(buf));
 

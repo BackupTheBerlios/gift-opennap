@@ -199,7 +199,8 @@ BOOL opn_nodelist_save(OpnNodeList *nodelist)
 BOOL opn_nodelist_load(OpnNodeList *nodelist)
 {
 	FILE *fp;
-	char *file = gift_conf_path("OpenNap/nodelist"), *buf = NULL, ip[16];
+	char *file = gift_conf_path("OpenNap/nodelist");
+	char ip[16], *buf = NULL;
 	in_port_t port;
 
 	if (!nodelist)

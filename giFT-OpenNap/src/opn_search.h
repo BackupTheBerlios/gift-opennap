@@ -23,6 +23,11 @@ typedef struct {
 	char query[128];
 	char exclude[128];
 	uint32_t ref;
+
+	/* search will be removed after 90 seconds
+	 * without a reply
+	 */ 
+	timer_id timer;
 } OpnSearch;
 
 OpnSearch *opn_search_new();
