@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_node.c,v 1.20 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_node.c,v 1.21 2003/08/08 11:01:41 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -105,12 +105,6 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 	int bytes;
 	in_port_t port;
 
-	if (net_sock_error(fd)) {
-		tcp_close(nodelist->con);
-		nodelist->con = NULL;
-		return;
-	}
-	
 	if ((bytes = tcp_recv(nodelist->con, (uint8_t *) buf,
 	                      sizeof(buf) - 1)) <= 0) {
 		/* so now we got our serverlist... connect! */
@@ -142,12 +136,6 @@ static void on_napigator_connect(int fd, input_id input, void *udata)
 	OpnNodeList *nodelist = (OpnNodeList *) udata;
 	char buf[] = "GET /servers.php?version=107&client=" OPN_CLIENTNAME " HTTP/1.0\n\n";
 
-	if (net_sock_error(fd)) {
-		tcp_close(nodelist->con);
-		nodelist->con = NULL;
-		return;
-	}
-	
 	input_remove(input);
 
 	tcp_send(nodelist->con, (uint8_t *) buf, strlen(buf));

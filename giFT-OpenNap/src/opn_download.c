@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_download.c,v 1.14 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_download.c,v 1.15 2003/08/08 11:01:41 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -184,21 +184,14 @@ static void on_download_read_data(int fd, input_id input, void *udata)
 {
 	OpnDownload *download = (OpnDownload *) udata;
 	uint8_t buf[RW_BUFFER];
-	size_t size = sizeof(buf);
+	size_t size;
 	int recvd;
 
-	if (net_sock_error(fd)) {
-		opn_download_free(download);
-		return;
-	}
-
-#if 0
 	/* Ask giFT for the max size we should read.  If this returns 0, the
 	 * download was suspended.
 	 */
 	if (!(size = download_throttle(download->chunk, sizeof(buf))))
 		return;
-#endif
 
 	if ((recvd = tcp_recv(download->con, buf, size)) <= 0) {
 		OPN->source_status(OPN, download->chunk->source,
@@ -218,11 +211,6 @@ static void on_download_read_filesize(int fd, input_id input, void *udata)
 	uint8_t buf[128];
 	int recvd, i;
 	uint32_t size = 0;
-
-	if (net_sock_error(fd)) {
-		opn_download_free(download);
-		return;
-	}
 
 	input_remove(input);
 
@@ -248,11 +236,6 @@ static void on_download_write(int fd, input_id input, void *udata)
 	OpnDownload *download = (OpnDownload *) udata;
 	char buf[PATH_MAX + 256];
 
-	if (net_sock_error(fd)) {
-		opn_download_free(download);
-		return;
-	}
-	
 	input_remove(input);
 
 	tcp_send(download->con, (uint8_t *) "GET", 3);
@@ -272,11 +255,6 @@ static void on_download_connect(int fd, input_id input, void *udata)
 	OpnDownload *download = (OpnDownload *) udata;
 	char c;
 
-	if (net_sock_error(fd)) {
-		opn_download_free(download);
-		return;
-	}
-	
 	input_remove(input);
 
 	if (tcp_recv(download->con, (uint8_t *) &c, 1) <= 0 || c != '1') {

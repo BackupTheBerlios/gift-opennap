@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol.h,v 1.8 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_protocol.h,v 1.9 2003/08/08 11:01:41 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -48,11 +48,8 @@ typedef enum {
 	OPN_CMD_UPLOAD_ACK = 608,
 	OPN_CMD_QUEUE_LIMIT_CL = 619,
 	OPN_CMD_QUEUE_LIMIT_SV = 620,
-	OPN_CMD_MOTD = 621,
-	OPN_CMD_LOGIN_ATTEMPT = 748,
 	OPN_CMD_PING = 751,
 	OPN_CMD_PONG = 752,
-	OPN_CMD_CLIENT_REDIRECT = 821,
 	OPN_CMD_NUM
 } OpnCommand;
 

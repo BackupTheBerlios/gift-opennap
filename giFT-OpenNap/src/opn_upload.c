@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_upload.c,v 1.10 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_upload.c,v 1.11 2003/08/08 11:01:41 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -122,11 +122,6 @@ static void on_upload_read(int fd, input_id input, void *udata)
 	char fmt[32];
 	int bytes;
 	uint32_t offset = 0;
-
-	if (net_sock_error(fd)) {
-		tcp_close(con);
-		return;
-	}
 
 	if ((bytes = tcp_recv(con, (uint8_t *) buf, sizeof(buf) - 1)) <= 0)
 		return;
