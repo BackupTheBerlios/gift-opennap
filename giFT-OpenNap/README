@@ -56,5 +56,20 @@ Contact
 
 I can be reached via e-mail (see AUTHORS) or via the gift-opennap-devel
 mailing list (http://developer.berlios.de/projects/gift-opennap).
-Feel free to send patches or bugreports.
+Feel free to send patches or bugreports (read the Bug reports section).
+
+
+Bug reports
+===========
+
+When reporting bugs, configure giFT-OpenNap using
+"configure --enable-debug" and include a gdb backtrace, if you can:
+
+$ gdb giFT
+$ run
+(wait until it breaks)
+$ backtrace
+
+...and send me the output. Note that if you are on x86,
+gdb will break shortly after startup. Just type "next" in that case.
 
