@@ -121,16 +121,15 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 
 	if (!strncmp(buf, "HTTP", 4)) {
 		/* position the pointer behind the HTTP header */
-		if ((ptr = strstr(buf, "\r\n\r\n")))
-			if (!(ptr += 4))
-				return;
+		if (!(ptr = strstr(buf, "\r\n\r\n")) || !(ptr += 4))
+			return;
 	}
 	
 	while (sscanf(ptr, "%s %hu %*[^\n]", ip, &port) == 2) {
 		if (port)
 			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip), port));
 		
-		if (!(ptr = strstr(ptr, "\n")) || !(++ptr) || !strlen(ptr))
+		if (!(ptr = strchr(ptr, '\n')) || !(++ptr) || !strlen(ptr))
 			break;
 	}
 }
