@@ -1,4 +1,4 @@
-AM_CFLAGS = $(CFLAGS)
+AM_CFLAGS = $(CFLAGS) @GIFT_OPENNAP_CFLAGS@
 
 plugin_LTLIBRARIES = libOpenNap.la
 
@@ -14,6 +14,5 @@ libOpenNap_la_SOURCES = \
 	opn_url.c opn_url.h \
 	opn_share.c opn_share.h
 
-INCLUDES = @GIFT_OPENNAP_CFLAGS@
 libOpenNap_la_LIBADD = @GIFT_OPENNAP_LIBS@ -lgiftproto
 
