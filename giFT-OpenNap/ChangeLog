@@ -1,3 +1,7 @@
+2003-07-06 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_packet.c: Use OPN_CMD_NONE as the default command,
+          fixed another big-endian bug
+
 2003-06-26 Tilman Sauerbeck <tilman@code-monkey.de>
         * Servers for local mode are now specified in
           ~/.giFT/OpenNap/nodelist
@@ -5,7 +9,7 @@
           trying to get a serverlist from Napigator
 
 2003-06-23 Tilman Sauerbeck <tilman@code-monkey.de>
-        * src/opn_url.c: IPs are saved in dotted notation now
+        * src/opn_url.c: IPs are written in dotted notation now
         * src/opn_protocol_handlers.c: Fixed some potential mem leaks.
         * src/opn_packet.c: Fixed a bug causing segfaults.
 
