@@ -24,7 +24,7 @@ OPN_HANDLER(login_error)
 {
 	assert(udata);
 
-	opn_session_free((OpnSession *) udata);
+	opn_session_free((OpnSession *) udata, TRUE);
 }
 
 OPN_HANDLER(login_ack)

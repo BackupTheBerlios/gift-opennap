@@ -22,6 +22,7 @@
 #include "opn_download.h"
 
 Protocol *opn_proto = NULL;
+static timer_id timer_connect = 0;
 
 BOOL opn_is_connected()
 {
@@ -38,7 +39,7 @@ BOOL opn_is_connected()
 	return FALSE;
 }
 
-static BOOL opn_connect(timer_id *timer)
+static BOOL opn_connect(void *udata)
 {
 	OpnSession *session;
 	OpnNode *node;
@@ -54,7 +55,7 @@ static BOOL opn_connect(timer_id *timer)
 			session = opn_session_new();
 			
 			if (!opn_session_connect(session, node))
-				opn_session_free(session);
+				opn_session_free(session, TRUE);
 		}
 	}
 
@@ -63,8 +64,8 @@ static BOOL opn_connect(timer_id *timer)
 
 void main_timer()
 {
-	timer_id timer = timer_add(30 * SECONDS,
-                               (TimerCallback) opn_connect, &timer);
+	timer_connect = timer_add(30 * SECONDS,
+	                          (TimerCallback) opn_connect, NULL);
 }
 
 static int gift_cb_stats(Protocol *p, unsigned long *users,
@@ -148,6 +149,8 @@ static void gift_cb_destroy(Protocol *p)
 {
 	if (!OPENNAP)
 		return;
+
+	timer_remove(timer_connect);
 
 	/* opn_nodelist_save(OPENNAP->nodelist); */
 

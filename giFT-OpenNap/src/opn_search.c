@@ -22,7 +22,7 @@
 
 static BOOL search_remove(OpnSearch *search)
 {
-	opn_search_free(search);
+	opn_search_free(search, TRUE);
 
 	return FALSE;
 }
@@ -45,14 +45,21 @@ OpnSearch *opn_search_new()
 	return search;
 }
 
-void opn_search_free(OpnSearch *search)
+/* Frees an OpnSearch
+ * @param search The OpnSearch to free
+ * @param del_list If TRUE, search will be removed from
+ *                 OPENNAP->searches
+ */
+void opn_search_free(OpnSearch *search, BOOL del_list)
 {
 	if (!search)
 		return;
 
 	timer_remove(search->timer);
 
-	OPENNAP->searches = list_remove(OPENNAP->searches, search);
+	if (del_list && OPENNAP->searches)
+		OPENNAP->searches = list_remove(OPENNAP->searches, search);
+
 	opn_proto->search_complete(opn_proto, search->event);
 	free(search);
 }
@@ -69,7 +76,7 @@ uint32_t opn_search_unref(OpnSearch *search)
 	assert(search);
 
 	if (!--search->ref) {
-		opn_search_free(search);
+		opn_search_free(search, TRUE);
 		return 0;
 	} else
 		return search->ref;
@@ -171,13 +178,15 @@ BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 
 static int foreach_search_free(OpnSearch *search, void *udata)
 {
-	opn_search_free(search);
+	opn_search_free(search, FALSE);
 
 	return 1;
 }
 
 void opn_searches_free(List *searches)
 {
+	assert(searches);
+
 	list_foreach_remove(searches,
 	                    (ListForeachFunc) foreach_search_free, NULL);
 }

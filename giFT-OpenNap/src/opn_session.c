@@ -22,7 +22,7 @@
 static void on_session_read(int fd, input_id input, OpnSession *session)
 {
 	if (net_sock_error(fd))
-		opn_session_free(session);
+		opn_session_free(session, TRUE);
 	else
 		opn_packet_recv(session->con, session);
 }
@@ -48,7 +48,7 @@ static void session_login(OpnSession *session)
 static void on_session_connect(int fd, input_id input, OpnSession *session)
 {
 	if (net_sock_error(fd)) {
-		opn_session_free(session);
+		opn_session_free(session, TRUE);
 		return;
 	}
 
@@ -90,7 +90,12 @@ OpnSession *opn_session_new()
 	return session;
 }
 
-void opn_session_free(OpnSession *session)
+/* Frees an OpnSession
+ * @param session The OpnSession to free
+ * @param del_list If TRUE, session will be removed from
+ *                 OPENNAP->sessions
+ */
+void opn_session_free(OpnSession *session, BOOL del_list)
 {
 	if (!session)
 		return;
@@ -98,7 +103,7 @@ void opn_session_free(OpnSession *session)
 	if (session->con)
 		tcp_close(session->con);
 
-	if (OPENNAP->sessions)
+	if (del_list && OPENNAP->sessions)
 		OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
 	
 	free(session);
@@ -124,7 +129,7 @@ OpnSession *opn_session_find(OpnUrl *url)
 
 static int foreach_session_free(OpnSession *session, void *udata)
 {
-	opn_session_free(session);
+	opn_session_free(session, FALSE);
 
 	return 1;
 }

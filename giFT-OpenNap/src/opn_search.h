@@ -33,7 +33,7 @@ typedef struct {
 OpnSearch *opn_search_new();
 uint32_t opn_search_ref(OpnSearch *search);
 uint32_t opn_search_unref(OpnSearch *search);
-void opn_search_free(OpnSearch *search);
+void opn_search_free(OpnSearch *search, BOOL del_list);
 void opn_searches_free(List *searches);
 
 OpnSearch *opn_search_find(char *query);
