@@ -1,3 +1,6 @@
+2003-06-26 Tilman Sauerbeck <tilman@code-monkey.de>
+        * Servers for local mode are now specified in ~/.giFT/OpenNap/nodelist
+
 2003-06-23 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_url.c: IPs are saved in dotted notation now
         * src/opn_protocol_handlers.c: Fixed some potential mem leaks.

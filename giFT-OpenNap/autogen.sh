@@ -46,8 +46,8 @@ test -f ltmain.sh || \
 
 # Workaround for Automake 1.5 to ensure that depcomp is distributed.
 echo "Running $AUTOMAKE..."
-$AUTOMAKE -a src/Makefile || exit 1
-$AUTOMAKE -a || exit 1
+$AUTOMAKE -c -a src/Makefile || exit 1
+$AUTOMAKE -c -a || exit 1
 test -f Makefile.in || \
   { echo "automake failed to generate Makefile.in" 2>&1; exit 1; }
 

@@ -40,7 +40,7 @@ See ~/.giFT/OpenNap/OpenNap.conf - it's quite well documented.
 If you're just getting started, the defaults will work well for you.
 
 If you want to use giFT OpenNap with a local server, enable
-local mode and set the host name and port accordingly.
+local mode and put some IPs in ~/.giFT/OpenNap/nodelist.
 
 Contact
 =======

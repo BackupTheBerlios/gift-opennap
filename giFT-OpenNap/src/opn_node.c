@@ -159,20 +159,13 @@ static void on_napigator_connect(int fd, input_id input, void *udata)
 	          TIMEOUT_DEF);
 }
 
-void opn_nodelist_refresh(OpnNodeList *nodelist)
+static void nodelist_load_napigator(OpnNodeList *nodelist)
 {
 	assert(nodelist);
 
-	/* if we are in local mode, just add the server specified
-	 * in OpenNap.conf
-	 */
-	if (OPENNAP_LOCAL_MODE) {
-		opn_nodelist_node_add(nodelist,
-		                      opn_node_new(net_ip(OPENNAP_LOCAL_IP),
-		                                   OPENNAP_LOCAL_PORT));
-		main_timer();
+	/* only query napigator if we aren't running in local mode */
+	if (OPENNAP_LOCAL_MODE)
 		return;
-	}
 
 	if (nodelist->con)
 		tcp_close(nodelist->con);
@@ -185,28 +178,7 @@ void opn_nodelist_refresh(OpnNodeList *nodelist)
 	          on_napigator_connect, TIMEOUT_DEF);
 }
 
-BOOL opn_nodelist_save(OpnNodeList *nodelist)
-{
-	OpnNode *node;
-	List *l;
-	FILE *fp;
-	char *file = gift_conf_path("OpenNap/nodelist");
-
-	assert(nodelist);
-
-	if (!(fp = fopen(file, "w")))
-		return FALSE;
-
-	for (l = list_last(nodelist->nodes); l; l = l->prev) {
-		assert(node = (OpnNode *) l->data);
-		
-		fprintf(fp, "%s:%hu\n", net_ip_str(node->ip), node->port);
-	}
-
-	return TRUE;
-}
-
-BOOL opn_nodelist_load(OpnNodeList *nodelist)
+static void nodelist_load_local(OpnNodeList *nodelist)
 {
 	FILE *fp;
 	char *file = gift_conf_path("OpenNap/nodelist");
@@ -216,12 +188,22 @@ BOOL opn_nodelist_load(OpnNodeList *nodelist)
 	assert(nodelist);
 	
 	if (!(fp = fopen(file, "r")))
-		return FALSE;
+		return;
 
 	while (file_read_line(fp, &buf))
 		if (sscanf(buf, "%[^:]:%hu", ip, &port) == 2)
 			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip), port));
 
-	return TRUE;
+	return;
 }
+
+void opn_nodelist_load(OpnNodeList *nodelist, BOOL local_mode)
+{
+	if (local_mode)
+		nodelist_load_local(nodelist);
+	else
+		nodelist_load_napigator(nodelist);
+}
+
+
 

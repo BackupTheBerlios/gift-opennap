@@ -72,12 +72,6 @@ extern Protocol *OPN;
 #define OPENNAP_LOCAL_MODE \
 	config_get_int(OPENNAP->cfg, "main/local_mode=0")
 
-#define OPENNAP_LOCAL_IP \
-	config_get_str(OPENNAP->cfg, "local_mode/host=127.0.0.1")
-
-#define OPENNAP_LOCAL_PORT \
-	config_get_int(OPENNAP->cfg, "local_mode/port=8888")
-
 #define OPENNAP_CLIENTNAME "giFT-OpenNap"
 #define OPENNAP_HASH "OPN_MD5"
 

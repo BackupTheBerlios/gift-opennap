@@ -162,16 +162,8 @@ static BOOL opennap_start(Protocol *p)
 		config_set_str(OPENNAP->cfg, "main/alias", alias);
 	}
 
-	if (OPENNAP_LOCAL_MODE)
-		config_set_int(OPENNAP->cfg, "main/max_connections", 1);
-
 	OPENNAP->nodelist = opn_nodelist_new();
-
-#if 0
-	opn_nodelist_load(OPENNAP->nodelist);
-#endif
-
-	opn_nodelist_refresh(OPENNAP->nodelist);
+	opn_nodelist_load(OPENNAP->nodelist, OPENNAP_LOCAL_MODE);
 
 	return TRUE;
 }
@@ -183,10 +175,6 @@ static void opennap_destroy(Protocol *p)
 
 	if (OPENNAP->timer_connect)
 		timer_remove(OPENNAP->timer_connect);
-
-#if 0
-	opn_nodelist_save(OPENNAP->nodelist);
-#endif
 
 	config_free(OPENNAP->cfg);
 
