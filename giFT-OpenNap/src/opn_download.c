@@ -83,6 +83,10 @@ void opn_download_free(OpnDownload *dl)
 	if (dl->con)
 		tcp_close(dl->con);
 
+	if (dl->chunk && dl->chunk->source)
+		OPN->source_status(OPN, dl->chunk->source,
+		                   SOURCE_CANCELLED, "Cancelled");
+
 	opn_url_free(dl->url);
 	free(dl);
 }
@@ -90,16 +94,17 @@ void opn_download_free(OpnDownload *dl)
 static void on_download_read_data(int fd, input_id input, void *udata)
 {
 	OpnDownload *download = (OpnDownload *) udata;
-	uint8_t buf[2048];
+	uint8_t buf[RW_BUFFER];
 	int bytes;
-	
-	if (net_sock_error(fd)) {
+
+	if (net_sock_error(fd) || (bytes = tcp_recv(download->con, buf,
+	                                            sizeof(buf))) <= 0) {
 		opn_download_free(download);
 		return;
 	}
-	
-	if ((bytes = tcp_recv(download->con, buf, sizeof(buf))) <= 0)
-		opn_download_free(download);
+
+	OPN->source_status(OPN, download->chunk->source, SOURCE_ACTIVE,
+	                   "Active");
 
 	OPN->chunk_write(OPN, download->chunk->transfer,
 	                 download->chunk, download->chunk->source,
@@ -112,7 +117,7 @@ static void on_download_read_filesize(int fd, input_id input, void *udata)
 	uint8_t buf[128];
 	int bytes, i;
 	uint32_t size = 0;
-	
+
 	if (net_sock_error(fd)) {
 		opn_download_free(download);
 		return;
@@ -130,7 +135,7 @@ static void on_download_read_filesize(int fd, input_id input, void *udata)
 
 	for (i = 0; isdigit(buf[i]) && size < download->url->size; i++)
 		size = (size * 10) + (buf[i] - '0');
-	
+
 	tcp_recv(download->con, buf, i);
 
 	input_add(fd, download, INPUT_READ, on_download_read_data,
@@ -141,7 +146,7 @@ static void on_download_write(int fd, input_id input, void *udata)
 {
 	OpnDownload *download = (OpnDownload *) udata;
 	char buf[PATH_MAX + 256];
-	
+
 	if (net_sock_error(fd)) {
 		opn_download_free(download);
 		return;
@@ -165,7 +170,7 @@ static void on_download_connect(int fd, input_id input, void *udata)
 {
 	OpnDownload *download = (OpnDownload *) udata;
 	char c;
-	
+
 	if (net_sock_error(fd)) {
 		opn_download_free(download);
 		return;
@@ -173,8 +178,10 @@ static void on_download_connect(int fd, input_id input, void *udata)
 	
 	input_remove(input);
 
-	if (tcp_recv(download->con, &c, 1) <= 0 || c != '1')
+	if (tcp_recv(download->con, &c, 1) <= 0 || c != '1') {
 		opn_download_free(download);
+		return;
+	}
 
 	input_add(fd, download, INPUT_WRITE, on_download_write,
 	          TIMEOUT_DEF);

@@ -3,6 +3,7 @@
           added opn_packet_put_str(), ...get_str() etc
         * src/opn_url.[ch]: Moved to dynamic buffers. Some bugfixes.
         * src/opn_protocol_handlers.c: Search and download fixes.
+        * src/opn_download.c: Download fixes. Source status is set now.
 
 2003-06-20 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_hash.[ch]: Added hashing functions

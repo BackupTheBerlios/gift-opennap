@@ -29,9 +29,9 @@ typedef struct {
 		in_port_t port;
 	} server;
 
-	char *user;
-	char *file;
-	uint32_t size;
+	char *user; /**< The user who shares this file */
+	char *file; /**< Full path of the file. Can be DOS or Unix-style */
+	uint32_t size; /**< Filesize */
 
 	char *serialized;
 } OpnUrl;

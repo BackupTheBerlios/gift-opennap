@@ -49,7 +49,7 @@ typedef enum {
 	OPN_CMD_NUM = 1024
 } OpnCommand;
 
-#define OPN_HANDLER_FUNC(func) opn_proto_handle_##func
+#define OPN_HANDLER_FUNC(func) opn_proto_handler_##func
 #define OPN_HANDLER_PARAMS struct _OpnPacket *packet, void *udata
 #define OPN_HANDLER(func) void OPN_HANDLER_FUNC(func)(OPN_HANDLER_PARAMS)
 

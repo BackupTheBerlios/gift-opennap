@@ -46,7 +46,7 @@ void opn_upload_free(OpnUpload *upload)
 static void on_upload_write(int fd, input_id input, void *udata)
 {
 	OpnUpload *upload = (OpnUpload *) udata;
-	uint8_t buf[1024];
+	uint8_t buf[RW_BUFFER];
 	size_t size;
 
 	/*
@@ -80,7 +80,7 @@ static void on_upload_read(int fd, input_id input, void *udata)
 {
 	TCPC *con = (TCPC *) udata;
 	Share *share;
-	uint8_t buf[2048];
+	uint8_t buf[PATH_MAX + 256];
 	int bytes;
 	uint32_t offset;
 	char file[PATH_MAX + 1], user[64];

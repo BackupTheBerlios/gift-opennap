@@ -190,7 +190,7 @@ OPN_HANDLER(search_finished)
 OPN_HANDLER(download_ack)
 {
 	OpnDownload *download;
-	OpnUrl url;
+	OpnUrl *url;
 	char *user, *file;
 	in_addr_t ip;
 	in_port_t port;
@@ -199,9 +199,12 @@ OPN_HANDLER(download_ack)
 	ip = opn_packet_get_ip(packet);
 	port = opn_packet_get_uint32(packet);
 	file = opn_packet_get_str(packet, TRUE);
-
-	opn_url_set_file(&url, file, 0);
-	opn_url_set_client(&url, user, ip, port);
+printf("'%s'. %u\n", packet->data->str, port);
+	if (!(url = opn_url_new()))
+		return;
+	
+	opn_url_set_file(url, file, 0);
+	opn_url_set_client(url, user, ip, port);
 
 	free(user);
 	free(file);
@@ -210,9 +213,14 @@ OPN_HANDLER(download_ack)
 	 * currently not supported
 	 * FIXME implement me!
 	 */
-	if (!(download = opn_download_find(&url)) || !port)
+	if (!(download = opn_download_find(url)) || !port) {
+		opn_url_free(url);
 		return;
+	}
 
+	opn_url_free(url);
+
+	download->url->client.port = port;
 	opn_download_start(download);
 }
 
