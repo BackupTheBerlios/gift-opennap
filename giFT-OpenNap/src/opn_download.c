@@ -19,26 +19,60 @@
 #include "opn_opennap.h"
 #include "opn_download.h"
 
-/**
- * Finds the OpnDownload \em chunk belongs to
- *
- * @param chunk
- * @return The found OpnDownload object or NULL
- */
-static OpnDownload *download_find_by_chunk(Chunk *chunk)
+static BOOL find_by_chunk(OpnDownload *dl, void *udata)
+{
+	return (dl->chunk == udata);
+}
+
+static BOOL find_by_client(OpnDownload *dl, void *udata)
+{
+	OpnUrl *url = (OpnUrl *) udata;
+
+	return (!strcasecmp(url->file, dl->url->file)
+	        && !strcasecmp(url->user, dl->url->user)
+	        && url->client.ip == dl->url->client.ip);
+}
+
+static BOOL find_by_user(OpnDownload *dl, void *udata)
+{
+	OpnUrl *url = (OpnUrl *) udata;
+
+	return (!strcasecmp(url->file, dl->url->file)
+	        && !strcasecmp(url->user, dl->url->user)
+	        && url->size == dl->url->size);
+}
+
+static OpnDownload *opn_download_find(OpnDownloadFindCb cb, void *udata)
 {
 	OpnDownload *download;
 	List *l;
-	
-	/* find the OpnDownload object @chunk belongs to */
+
+	assert(cb);
+	assert(udata);
+
 	for (l = OPENNAP->downloads; l; l = l->next) {
 		download = (OpnDownload *) l->data;
 
-		if (download->chunk == chunk)
+		if ((*cb)((OpnDownload *) l->data, udata))
 			return download;
 	}
 
 	return NULL;
+}
+
+OpnDownload *opn_download_find_by_user(OpnUrl *url)
+{
+	return opn_download_find(find_by_user, url);
+}
+
+OpnDownload *opn_download_find_by_client(OpnUrl *url)
+{
+	return opn_download_find(find_by_client, url);
+}
+
+OpnDownload *opn_download_find_by_chunk(Chunk *c)
+{
+	return opn_download_find(find_by_chunk, c);
 }
 
 BOOL opennap_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Source *source)
@@ -75,13 +109,14 @@ BOOL opennap_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 
 int opennap_source_remove(Protocol *p, Transfer *t, Source *s)
 {
+	/* FIXME */
 	return 0;
 }
 
 void opennap_download_stop(Protocol *p, Transfer *transfer,
                            Chunk *chunk, Source *source, int complete)
 {
-	opn_download_free(download_find_by_chunk(chunk));
+	opn_download_free(opn_download_find_by_chunk(chunk));
 }
 
 BOOL opennap_chunk_suspend(Protocol *p, Transfer *transfer,
@@ -89,7 +124,7 @@ BOOL opennap_chunk_suspend(Protocol *p, Transfer *transfer,
 {
 	OpnDownload *download;
 
-	if (!(download = download_find_by_chunk(chunk)))
+	if (!(download = opn_download_find_by_chunk(chunk)))
 		return FALSE;
 	else {
 		assert(download->con);
@@ -104,7 +139,7 @@ BOOL opennap_chunk_resume(Protocol *p, Transfer *transfer,
 {
 	OpnDownload *download;
 
-	if (!(download = download_find_by_chunk(chunk)))
+	if (!(download = opn_download_find_by_chunk(chunk)))
 		return FALSE;
 	else {
 		assert(download->con);
@@ -260,24 +295,5 @@ void opn_download_start(OpnDownload *download)
 	
 	input_add(download->con->fd, download, INPUT_READ,
 	          on_download_connect, TIMEOUT_DEF);
-}
-
-OpnDownload *opn_download_find(OpnUrl *url)
-{
-	OpnDownload *download;
-	List *l;
-
-	assert(url);
-
-	for (l = OPENNAP->downloads; l; l = l->next) {
-		download = (OpnDownload *) l->data;
-
-		if (!strcasecmp(url->file, download->url->file)
-		    && !strcasecmp(url->user, download->url->user)
-		    && url->client.ip == download->url->client.ip)
-			return download;
-	}
-
-	return NULL;
 }
 

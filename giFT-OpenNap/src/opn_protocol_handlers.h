@@ -26,6 +26,7 @@ OPN_HANDLER(search_finished);
 
 OPN_HANDLER(download_ack);
 OPN_HANDLER(download_error);
+OPN_HANDLER(queue_limit);
 
 OPN_HANDLER(stats);
 

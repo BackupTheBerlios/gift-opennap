@@ -11,7 +11,8 @@ currently.
 Status
 ======
 
-Searching works, sharing and downloading (or uploading) stuff doesn't.
+Searching works, downloading is on it's way, but uploading stuff
+doesn't work yet.
 
 It's known to work on:
 Linux 2.4 on x86

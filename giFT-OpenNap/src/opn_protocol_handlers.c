@@ -196,7 +196,7 @@ OPN_HANDLER(download_ack)
 	 * currently not supported
 	 * FIXME implement me!
 	 */
-	if (!(download = opn_download_find(url)) || !port) {
+	if (!(download = opn_download_find_by_client(url)) || !port) {
 		opn_url_free(url);
 		return;
 	}
@@ -210,5 +210,34 @@ OPN_HANDLER(download_ack)
 OPN_HANDLER(download_error)
 {
 	/* FIXME */
+}
+
+OPN_HANDLER(queue_limit)
+{
+	OpnDownload *download;
+	OpnUrl *url;
+	char *user, *file;
+	uint32_t size;
+
+	if (!(url = opn_url_new()))
+		return;
+
+	user = opn_packet_get_str(packet, FALSE);
+	file = opn_packet_get_str(packet, TRUE);
+	size = opn_packet_get_uint32(packet);
+
+	opn_url_set_client(url, user, 0, 0);
+	opn_url_set_file(url, file, size);
+
+	free(user);
+	free(file);
+	
+	if (!(download = opn_download_find_by_user(url)))
+		return;
+
+	opn_url_free(url);
+
+	OPN->source_status(OPN, download->chunk->source,
+	                   SOURCE_QUEUED_REMOTE, "Queued");
 }
 

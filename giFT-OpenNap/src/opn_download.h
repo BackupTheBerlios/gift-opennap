@@ -24,6 +24,8 @@ typedef struct {
 	Chunk *chunk;
 } OpnDownload;
 
+typedef BOOL (*OpnDownloadFindCb)(OpnDownload *dl, void *udata);
+
 BOOL opennap_download_start(Protocol *p, Transfer *transfer,
                             Chunk *chunk, Source *source);
 void opennap_download_stop(Protocol *p, Transfer *transfer,
@@ -36,7 +38,11 @@ BOOL opennap_chunk_resume(Protocol *p, Transfer *transfer,
                           Chunk *chunk, Source *source);
 
 OpnDownload *opn_download_new();
-OpnDownload *opn_download_find(OpnUrl *url);
+
+OpnDownload *opn_download_find_by_chunk(Chunk *c);
+OpnDownload *opn_download_find_by_client(OpnUrl *url);
+OpnDownload *opn_download_find_by_user(OpnUrl *url);
+
 void opn_download_free(OpnDownload *download);
 void opn_download_start(OpnDownload *download);
 
