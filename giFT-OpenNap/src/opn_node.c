@@ -175,19 +175,24 @@ static void nodelist_load_napigator(OpnNodeList *nodelist)
 static void nodelist_load_local(OpnNodeList *nodelist)
 {
 	FILE *fp;
-	char *file = gift_conf_path("OpenNap/nodelist");
+	char *file = gift_conf_path("OpenNap/nodelist"), src[PATH_MAX + 1];
 	char ip[16], *buf = NULL;
 	in_port_t port;
 
-	if (!(fp = fopen(file, "r")))
-		return;
+	if (!(fp = fopen(file, "r"))) {
+		snprintf(src, sizeof(src), "%s",
+		         DATADIR "/nodelist");
+
+		file_cp(src, file);
+
+		if (!(fp = fopen(file, "r")))
+			return;
+	}
 
 	while (file_read_line(fp, &buf))
 		if (sscanf(buf, "%15[^:]:%hu", ip, &port) == 2)
 			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip),
 			                                             port));
-
-	return;
 }
 
 void opn_nodelist_load(OpnNodeList *nodelist, BOOL use_napigator)

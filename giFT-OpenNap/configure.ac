@@ -19,7 +19,7 @@ AC_PROG_LIBTOOL
 AC_ARG_ENABLE(debug,
 		[  --enable-debug          debug build (default: no)], [
 			AC_DEFINE(OPENNAP_DEBUG)
-			CFLAGS=`echo "$CFLAGS -g -Wall" | sed s/" -s"//`
+			CFLAGS=`echo "$CFLAGS -g -Wall -Werror" | sed s/" -s"//`
 		])
 
 PKG_CHECK_MODULES(GIFT_OPENNAP, libgift >= 0.10.0)

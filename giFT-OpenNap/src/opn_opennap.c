@@ -107,16 +107,12 @@ static int opennap_stats(Protocol *p, unsigned long *users,
 static Config *config_load()
 {
 	Config *cfg;
-	char *src, dst[PATH_MAX + 1];
+	char src[PATH_MAX + 1];
 	
-	src = gift_conf_path("OpenNap/OpenNap.conf");
-
 	if (!(cfg = gift_config_new("OpenNap"))) {
-		snprintf(dst, sizeof(dst), "%s",
-		         DATADIR "/OpenNap/OpenNap.conf");
-
-		file_cp(src, dst);
-
+		snprintf(src, sizeof(src), "%s", DATADIR "/OpenNap.conf");
+		file_cp(src, gift_conf_path("OpenNap/OpenNap.conf"));
+		
 		cfg = gift_config_new("OpenNap");
 	}
 

@@ -1,3 +1,9 @@
+2003-07-11 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_opennap.c: Fixed copying of OpenNap.conf if it's
+          not present in ~/.giFT/OpenNap
+        * src/opn_node.c: Copy nodelist to ~/.giFT/OpenNap if it
+          cannot be found there
+
 2003-07-06 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_packet.c: Use OPN_CMD_NONE as the default command,
           fixed another big-endian bug
