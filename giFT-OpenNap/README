@@ -15,7 +15,8 @@ Status
 Searching works, downloading and uploading stuff is on it's way.
 
 It's known to work on:
-Linux 2.4 on x86
+ * Linux 2.4 on x86
+ * MacOS X 10.2 on PPC
 
 If you get it working on another system, please let me know.
 If you don't get it working on another system, let me know as well :)
