@@ -109,10 +109,9 @@ BOOL opennap_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 	return ret;
 }
 
-int opennap_source_remove(Protocol *p, Transfer *t, Source *s)
+void opennap_source_remove(Protocol *p, Transfer *t, Source *s)
 {
 	/* FIXME */
-	return 0;
 }
 
 void opennap_download_stop(Protocol *p, Transfer *transfer,

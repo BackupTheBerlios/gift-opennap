@@ -30,8 +30,8 @@ BOOL opennap_download_start(Protocol *p, Transfer *transfer,
                             Chunk *chunk, Source *source);
 void opennap_download_stop(Protocol *p, Transfer *transfer,
                            Chunk *chunk, Source *source, int complete);
-int opennap_source_remove(Protocol *p, Transfer *transfer,
-                          Source *source);
+void opennap_source_remove(Protocol *p, Transfer *transfer,
+                           Source *source);
 BOOL opennap_chunk_suspend(Protocol *p, Transfer *transfer,
                            Chunk *chunk, Source *source);
 BOOL opennap_chunk_resume(Protocol *p, Transfer *transfer,

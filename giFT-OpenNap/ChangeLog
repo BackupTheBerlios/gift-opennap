@@ -1,6 +1,8 @@
 2003-07-06 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_packet.c: Use OPN_CMD_NONE as the default command,
           fixed another big-endian bug
+        * src/opn_download.[ch]: Updated so it compiles with recent
+          libgiFT
 
 2003-06-26 Tilman Sauerbeck <tilman@code-monkey.de>
         * Servers for local mode are now specified in
