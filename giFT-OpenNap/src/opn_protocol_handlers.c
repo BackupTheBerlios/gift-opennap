@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol_handlers.c,v 1.21 2003/08/12 11:38:04 tsauerbeck Exp $
+ * $Id: opn_protocol_handlers.c,v 1.22 2003/08/13 09:20:13 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -31,8 +31,7 @@ OPN_HANDLER(login_error)
 	OPN->DBGFN(OPN, "%s\n", packet->read);
 #endif
 
-	OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
-	opn_session_free(session);
+	opn_session_disconnect(session);
 }
 
 OPN_HANDLER(login_ack)

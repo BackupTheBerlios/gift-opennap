@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_node.c,v 1.24 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_node.c,v 1.25 2003/08/13 09:20:13 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -98,19 +98,27 @@ void opn_nodelist_node_remove(OpnNodeList *nodelist, OpnNode *node)
 	opn_node_free(node);
 }
 
-static void on_napigator_read(int fd, input_id input, void *udata)
+static void napigator_finish(OpnNodeList *nlist)
 {
-	OpnNodeList *nodelist = (OpnNodeList *) udata;
+	tcp_close_null(&nlist->con);
+
+	if (list_length(nlist->nodes) > 0)
+		opn_connect();
+}
+
+static void on_napigator_read(int fd, input_id input,
+                              OpnNodeList *nlist)
+{
 	char buf[RW_BUFFER], ip[16], *ptr = buf;
 	int bytes;
 	in_port_t port;
 
-	if ((bytes = tcp_recv(nodelist->con, (uint8_t *) buf,
+	if (fd == -1 || !input || net_sock_error(fd)
+	   || (bytes = tcp_recv(nlist->con, (uint8_t *) buf,
 	                      sizeof(buf) - 1)) <= 0) {
-		/* so now we got our serverlist... connect! */
-		tcp_close(nodelist->con);
-		nodelist->con = NULL;
-		opn_connect();
+		input_remove(input);
+		napigator_finish(nlist);
+		return;
 	}
 	
 	buf[bytes] = 0;
@@ -123,7 +131,7 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 	
 	while (sscanf(ptr, "%15s %hu %*[^\n]", ip, &port) == 2) {
 		if (port)
-			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip),
+			opn_nodelist_node_add(nlist, opn_node_new(net_ip(ip),
 			                                             port));
 		
 		if (!(ptr = strchr(ptr, '\n')) || !(++ptr) || !strlen(ptr))
@@ -131,17 +139,20 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 	}
 }
 
-static void on_napigator_connect(int fd, input_id input, void *udata)
+static void on_napigator_connect(int fd, input_id input,
+                                 OpnNodeList *nlist)
 {
-	OpnNodeList *nodelist = (OpnNodeList *) udata;
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		opn_nodelist_free(nlist);
+		return;
+	}
 
-	input_remove(input);
-
-	tcp_writestr(nodelist->con, "GET /servers.php?version=107&client="
+	tcp_writestr(nlist->con, "GET /servers.php?version=107&client="
 	             OPN_CLIENTNAME " HTTP/1.0\n\n");
 
-	input_add(fd, nodelist, INPUT_READ, on_napigator_read,
-	          TIMEOUT_DEF);
+	input_remove(input);
+	input_add(fd, nlist, INPUT_READ,
+	          (InputCallback) on_napigator_read, 30 * SECONDS);
 }
 
 static void nodelist_load_napigator(OpnNodeList *nodelist)
@@ -153,7 +164,7 @@ static void nodelist_load_napigator(OpnNodeList *nodelist)
 		return;
 	
 	input_add(nodelist->con->fd, nodelist, INPUT_WRITE,
-	          on_napigator_connect, TIMEOUT_DEF);
+	          (InputCallback) on_napigator_connect, 30 * SECONDS);
 }
 
 static void nodelist_load_local(OpnNodeList *nodelist)

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_upload.c,v 1.14 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_upload.c,v 1.15 2003/08/13 09:20:13 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -55,11 +55,15 @@ void opennap_upload_stop(Protocol *p, Transfer *t, Chunk *c, Source *s)
 	c->udata = NULL;
 }
 
-static void on_upload_write(int fd, input_id input, void *udata)
+static void on_upload_write(int fd, input_id input, OpnUpload *upload)
 {
-	OpnUpload *upload = (OpnUpload *) udata;
 	uint8_t buf[RW_BUFFER];
 	size_t size, read, sent;
+
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		opn_upload_free(upload);
+		return;
+	}
 
 	if (!(size = upload_throttle(upload->chunk, sizeof(buf))))
 		return;
@@ -75,17 +79,19 @@ static void on_upload_write(int fd, input_id input, void *udata)
 }
 
 static void on_upload_send_filesize(int fd, input_id input,
-                                    void *udata)
+                                    OpnUpload *upload)
 {
-	OpnUpload *upload = (OpnUpload *) udata;
-
-	input_remove(input);
-
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		opn_upload_free(upload);
+		return;
+	}
+	
 	tcp_writestr(upload->con, stringf("%lu",
 	             upload->chunk->stop - upload->chunk->start));
 	
-	input_add(upload->con->fd, upload, INPUT_WRITE,
-	          on_upload_write, TIMEOUT_DEF);
+	input_remove(input);
+	input_add(fd, upload, INPUT_WRITE,
+	          (InputCallback) on_upload_write, 30 * SECONDS);
 }
 
 static void opn_upload_start(char *user, Share *share, uint32_t offset,
@@ -107,18 +113,22 @@ static void opn_upload_start(char *user, Share *share, uint32_t offset,
 	fseek(upload->fp, offset, SEEK_SET);
 	
 	input_add(con->fd, upload, INPUT_WRITE,
-	          on_upload_send_filesize, TIMEOUT_DEF);
+	          (InputCallback) on_upload_send_filesize, 30 * SECONDS);
 	free(path);
 }
 
-static void on_upload_read(int fd, input_id input, void *udata)
+static void on_upload_read(int fd, input_id input, TCPC *con)
 {
-	TCPC *con = (TCPC *) udata;
 	Share *share;
 	char buf[PATH_MAX + 256], file[PATH_MAX + 1] = {0}, user[64] = {0};
 	int bytes;
 	uint32_t offset = 0;
 
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		tcp_close(con);
+		return;
+	}
+	
 	if ((bytes = tcp_recv(con, (uint8_t *) buf, sizeof(buf) - 1)) <= 0)
 		return;
 
@@ -153,15 +163,16 @@ static void on_upload_read(int fd, input_id input, void *udata)
 	tcp_close(con);
 }
 
-void opn_upload_connect(int fd, input_id input, void *udata)
+void opn_upload_connect(int fd, input_id input, TCPC *listen)
 {
-	TCPC *con, *listen = (TCPC *) udata;
+	TCPC *con;
 
 	if (!(con = tcp_accept(listen, FALSE)))
 		return;
 	
 	tcp_writestr(con, "1");
 
-	input_add(con->fd, con, INPUT_READ, on_upload_read, TIMEOUT_DEF);
+	input_add(con->fd, con, INPUT_READ, (InputCallback) on_upload_read,
+	          30 * SECONDS);
 }
 

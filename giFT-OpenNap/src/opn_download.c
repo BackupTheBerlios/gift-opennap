@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_download.c,v 1.18 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_download.c,v 1.19 2003/08/13 09:20:13 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -178,90 +178,98 @@ void opn_download_free(OpnDownload *dl)
 	free(dl);
 }
 
-static void on_download_read_data(int fd, input_id input, void *udata)
+static void on_download_read_data(int fd, input_id input, OpnDownload *dl)
 {
-	OpnDownload *download = (OpnDownload *) udata;
 	uint8_t buf[RW_BUFFER];
 	size_t size;
 	int recvd;
 
-	/* Ask giFT for the max size we should read.  If this returns 0, the
-	 * download was suspended.
-	 */
-	if (!(size = download_throttle(download->chunk, sizeof(buf))))
-		return;
-
-	if ((recvd = tcp_recv(download->con, buf, size)) <= 0) {
-		OPN->source_status(OPN, download->chunk->source,
-		                   SOURCE_CANCELLED, "Error");
-		opn_download_free(download);
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		opn_download_free(dl);
 		return;
 	}
 
-	OPN->chunk_write(OPN, download->chunk->transfer,
-	                 download->chunk, download->chunk->source,
-	                 buf, recvd);
+	/* Ask giFT for the max size we should read.  If this returns 0, the
+	 * download was suspended.
+	 */
+	if (!(size = download_throttle(dl->chunk, sizeof(buf))))
+		return;
+
+	if ((recvd = tcp_recv(dl->con, buf, size)) <= 0) {
+		OPN->source_status(OPN, dl->chunk->source,
+		                   SOURCE_CANCELLED, "Error");
+		opn_download_free(dl);
+		return;
+	}
+
+	OPN->chunk_write(OPN, dl->chunk->transfer, dl->chunk,
+	                 dl->chunk->source, buf, recvd);
 }
 
-static void on_download_read_filesize(int fd, input_id input, void *udata)
+static void on_download_read_filesize(int fd, input_id input, OpnDownload *dl)
 {
-	OpnDownload *download = (OpnDownload *) udata;
 	uint8_t buf[128];
 	int recvd, i;
 	uint32_t size = 0;
 
-	input_remove(input);
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		opn_download_free(dl);
+		return;
+	}
 
 	/* get the filesize */
-	if ((recvd = tcp_peek(download->con, buf, sizeof(buf))) <= 0) {
-		opn_download_free(download);
+	if ((recvd = tcp_peek(dl->con, buf, sizeof(buf))) <= 0) {
+		opn_download_free(dl);
 		return;
 	}
 
 	buf[recvd] = 0;
 
-	for (i = 0; isdigit(buf[i]) && size < download->url->size; i++)
+	for (i = 0; isdigit(buf[i]) && size < dl->url->size; i++)
 		size = (size * 10) + (buf[i] - '0');
 
-	tcp_recv(download->con, buf, i);
+	tcp_recv(dl->con, buf, i);
 
-	input_add(fd, download, INPUT_READ, on_download_read_data,
-	          TIMEOUT_DEF);
+	input_remove(input);
+	input_add(fd, dl, INPUT_READ,
+	          (InputCallback) on_download_read_data, 5 * SECONDS);
 }
 
-static void on_download_write(int fd, input_id input, void *udata)
+static void on_download_write(int fd, input_id input, OpnDownload *dl)
 {
-	OpnDownload *download = (OpnDownload *) udata;
 	char buf[PATH_MAX + 256];
 
-	input_remove(input);
-
-	tcp_writestr(download->con, "GET");
-
-	snprintf(buf, sizeof(buf), "%s \"%s\" %lu",
-	         OPN_ALIAS, download->url->file,
-	         download->chunk->start + download->chunk->transmit);
-
-	tcp_writestr(download->con, buf);
-
-	input_add(fd, download, INPUT_READ, on_download_read_filesize,
-	          TIMEOUT_DEF);
-}
-
-static void on_download_connect(int fd, input_id input, void *udata)
-{
-	OpnDownload *download = (OpnDownload *) udata;
-	char c;
-
-	input_remove(input);
-
-	if (tcp_recv(download->con, (uint8_t *) &c, 1) <= 0 || c != '1') {
-		opn_download_free(download);
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		opn_download_free(dl);
 		return;
 	}
 
-	input_add(fd, download, INPUT_WRITE, on_download_write,
-	          TIMEOUT_DEF);
+	tcp_writestr(dl->con, "GET");
+
+	snprintf(buf, sizeof(buf), "%s \"%s\" %lu",
+	         OPN_ALIAS, dl->url->file,
+	         dl->chunk->start + dl->chunk->transmit);
+
+	tcp_writestr(dl->con, buf);
+
+	input_remove(input);
+	input_add(fd, dl, INPUT_READ,
+	          (InputCallback) on_download_read_filesize, 30 * SECONDS);
+}
+
+static void on_download_connect(int fd, input_id input, OpnDownload *dl)
+{
+	char c;
+
+	if (fd == -1 || !input || net_sock_error(fd)
+	   || tcp_recv(dl->con, (uint8_t *) &c, 1) <= 0 || c != '1') {
+		opn_download_free(dl);
+		return;
+	}
+
+	input_remove(input);
+	input_add(fd, dl, INPUT_WRITE, (InputCallback) on_download_write,
+	          5 * SECONDS);
 }
 
 void opn_download_start(OpnDownload *download)
@@ -273,6 +281,6 @@ void opn_download_start(OpnDownload *download)
 		return;
 	
 	input_add(download->con->fd, download, INPUT_READ,
-	          on_download_connect, TIMEOUT_DEF);
+	          (InputCallback) on_download_connect, 30 * SECONDS);
 }
 

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_session.c,v 1.17 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_session.c,v 1.18 2003/08/13 09:20:13 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -22,18 +22,24 @@
 #include "opn_node.h"
 #include "opn_protocol.h"
 
-static void on_session_read(int fd, input_id input, void *udata)
+static void on_session_read(int fd, input_id input, OpnSession *session)
 {
-	OpnSession *session = (OpnSession *) udata;
 	OpnPacket *packet;
-	FDBuf *buf = tcp_readbuf(session->con);
-	uint16_t len = buf->flag + OPN_PACKET_HEADER_LEN;
+	FDBuf *buf;
+	uint16_t len;
 	uint8_t *data;
 	int n;
 
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		opn_session_disconnect(session);
+		return;
+	}
+
+	buf = tcp_readbuf(session->con);
+	len = buf->flag + OPN_PACKET_HEADER_LEN;
+
 	if ((n = fdbuf_fill(buf, len)) < 0) {
-		OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
-		opn_session_free(session);
+		opn_session_disconnect(session);
 		return;
 	} else if (n > 0)
 		return;
@@ -79,15 +85,18 @@ static void session_login(OpnSession *session)
 	opn_packet_free(packet);
 }
 
-static void on_session_connect(int fd, input_id input, void *udata)
+static void on_session_connect(int fd, input_id input, OpnSession *session)
 {
-	OpnSession *session = (OpnSession *) udata;
-	
-	input_remove(input);
+	if (fd == -1 || !input || net_sock_error(fd)) {
+		opn_session_disconnect(session);
+		return;
+	}
 	
 	session_login(session);
 
-	input_add(fd, session, INPUT_READ, on_session_read, TIMEOUT_DEF);
+	input_remove(input);
+	input_add(fd, session, INPUT_READ,
+	          (InputCallback) on_session_read, 30 * SECONDS);
 }
 
 BOOL opn_session_connect(OpnSession *session, OpnNode *node)
@@ -102,9 +111,17 @@ BOOL opn_session_connect(OpnSession *session, OpnNode *node)
 	session->node->state = OPN_NODE_STATE_CONNECTING;
 
 	input_add(session->con->fd, session, INPUT_WRITE,
-	          on_session_connect, TIMEOUT_DEF);
+	          (InputCallback) on_session_connect, 30 * SECONDS);
 	
 	return TRUE;
+}
+
+void opn_session_disconnect(OpnSession *session)
+{
+	assert(session);
+	
+	OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
+	opn_session_free(session);
 }
 
 OpnSession *opn_session_new()

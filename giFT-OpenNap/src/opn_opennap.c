@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.c,v 1.24 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_opennap.c,v 1.25 2003/08/13 09:20:13 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -147,7 +147,7 @@ static BOOL opennap_start(Protocol *p)
 		return FALSE;
 	
 	input_add(OPENNAP->con->fd, OPENNAP->con, INPUT_READ,
-	          opn_upload_connect, TIMEOUT_DEF);
+	          (InputCallback) opn_upload_connect, TIMEOUT_DEF);
 
 	if (OPN_RANDOM_USERNAME) {
 		set_username(alias);

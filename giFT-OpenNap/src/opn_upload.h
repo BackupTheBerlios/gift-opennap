@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_upload.h,v 1.4 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_upload.h,v 1.5 2003/08/13 09:20:13 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -33,7 +33,7 @@ void opn_upload_free(OpnUpload *upload);
 
 void opennap_upload_stop(Protocol *p, Transfer *t, Chunk *c, Source *s);
 	
-void opn_upload_connect(int fd, input_id input, void *udata);
+void opn_upload_connect(int fd, input_id input, TCPC *con);
 
 #endif
 

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_session.h,v 1.6 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_session.h,v 1.7 2003/08/13 09:20:13 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -35,8 +35,11 @@ typedef struct {
 
 OpnSession *opn_session_new();
 void opn_session_free(OpnSession *session);
+
+BOOL opn_session_connect(OpnSession *session, OpnNode *node);
+void opn_session_disconnect(OpnSession *session);
+
 OpnSession *opn_session_find(OpnUrl *url);
-int opn_session_connect(OpnSession *session, OpnNode *node);
 void opn_sessions_free(List *sessions);
 
 #endif
