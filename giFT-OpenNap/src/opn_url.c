@@ -16,7 +16,7 @@
  */
 
 #include "opn_opennap.h"
-#include <ctype.h>
+#include "opn_utils.h"
 
 OpnUrl *opn_url_new()
 {
@@ -67,115 +67,6 @@ void opn_url_set_file(OpnUrl *url, char *file, uint32_t size)
 	url->file = STRDUP(file);
 }
 
-/* stolen from OpenFT ;) */
-static int oct_value_from_hex(char hex_char)
-{
-	if (!isxdigit(hex_char))
-		return 0;
-
-	if (hex_char >= '0' && hex_char <= '9')
-		return (hex_char - '0');
-
-	hex_char = toupper(hex_char);
-
-	return ((hex_char - 'A') + 10);
-}
-
-/* stolen from OpenFT ;) */
-static char *url_decode(char *encoded)
-{
-	char *decoded, *ptr;
-	int oct_val;
-
-	assert(encoded);
-
-	/* make sure we are using our own memory here ... */
-	ptr = strdup(encoded);
-
-	/* save the head */
-	decoded = ptr;
-
-	/* convert '+' -> ' ' and %2x -> char value */
-	while (*ptr) {
-		switch (*ptr) {
-			case '+':
-				*ptr = ' ';
-				break;
-			case '%':
-				if (isxdigit (ptr[1]) && isxdigit (ptr[2])) {
-					oct_val = oct_value_from_hex(ptr[1]) * 16;
-					oct_val += oct_value_from_hex(ptr[2]);
-
-					*ptr = (char) oct_val;
-					string_move(ptr + 1, ptr + 3);
-				}
-
-				break;
-			default:
-				break;
-		}
-
-		ptr++;
-	}
-
-	return decoded;
-}
-
-/* stolen from OpenFT ;) */
-static char *url_encode_char(char *stream, uint8_t c)
-{
-	*stream++ = '%';
-
-	sprintf(stream, "%02x", (uint32_t) c);
-
-	return stream + 2;
-}
-
-/* stolen from OpenFT ;) */
-static char *url_encode(char *decoded)
-{
-	char *encoded, *ptr;
-
-	assert(decoded);
-
-	/* allocate a large enough buffer for all cases */
-	encoded = ptr = malloc((strlen(decoded) * 3) + 1);
-
-	while (*decoded) {
-		/* we can rule out non-printable and whitespace characters */
-		if (!isprint(*decoded) || isspace(*decoded))
-			ptr = url_encode_char(ptr, *decoded);
-		else
-			/* check for anything special */
-			switch (*decoded) {
-				case '?':
-				case '@':
-				case '+':
-				case '%':
-				case '&':
-				case ':':
-				case '=':
-				case '(':
-				case ')':
-				case '[':
-				case ']':
-				case '\"':
-				case '\\':
-				case '\'':
-						ptr = url_encode_char(ptr, *decoded);
-						break;
-				default: /* regular character, just copy */
-						*ptr++ = *decoded;
-						break;
-			}
-
-		decoded++;
-	}
-
-	*ptr = 0;
-
-	return encoded;
-}
 
 OpnUrl *opn_url_unserialize(char *data)
 {
@@ -215,7 +106,7 @@ OpnUrl *opn_url_unserialize(char *data)
 	ptr2++;
 
 	snprintf(buf, MIN(ptr2 - ptr, sizeof(buf)), "%s", ptr);
-	url->user = url_decode(buf);
+	url->user = opn_url_decode(buf);
 	
 	url->size = strtoul(ptr2 + 5, NULL, 10);
 
@@ -223,7 +114,7 @@ OpnUrl *opn_url_unserialize(char *data)
 	ptr += 6;
 	
 	snprintf(buf, sizeof(buf), "%s", ptr);
-	url->file = url_decode(buf);
+	url->file = opn_url_decode(buf);
 	
 	return url;
 }
@@ -234,8 +125,8 @@ char *opn_url_serialize(OpnUrl *url)
 	
 	assert(url);
 
-	user = url_encode(url->user);
-	file = url_encode(url->file);
+	user = opn_url_encode(url->user);
+	file = opn_url_encode(url->file);
 	snprintf(client, sizeof(client), "%s", net_ip_str(url->client.ip));
 
 	url->serialized = stringf_dup("OpenNap://%s:%hu@%s:%hu?user=%s"

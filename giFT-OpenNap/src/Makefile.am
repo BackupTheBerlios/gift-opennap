@@ -14,7 +14,8 @@ libOpenNap_la_SOURCES = \
 	opn_upload.c opn_upload.h \
 	opn_url.c opn_url.h \
 	opn_share.c opn_share.h \
-	opn_hash.c opn_hash.h
+	opn_hash.c opn_hash.h \
+	opn_utils.c opn_utils.h
 
 libOpenNap_la_LIBADD = @GIFT_OPENNAP_LIBS@ -lgiftproto
 

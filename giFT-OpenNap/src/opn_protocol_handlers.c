@@ -20,6 +20,7 @@
 #include "opn_download.h"
 #include "opn_search.h"
 #include "opn_share.h"
+#include "opn_utils.h"
 
 OPN_HANDLER(login_error)
 {
@@ -80,30 +81,6 @@ OPN_HANDLER(ping)
 	opn_packet_free(pong);
 }
 
-/* temporary, until giFT's function is fixed */
-char *my_file_unix_path (char *host_path)
-{
-	char *unix_path;
-	char *ptr;
-
-	assert(host_path);
-
-	if (!(unix_path = strdup(host_path)))
-		return NULL;
-
-	if (host_path[1] == ':') {
-		/* C:\dir\file -> /C\dir\file */
-		unix_path[0] = '/';
-		unix_path[1] = host_path[0];
-	}
-
-	for (ptr = unix_path; *ptr; ptr++)
-		if (*ptr == '\\')
-			*ptr = '/';
-
-	return unix_path;
-}
-
 OPN_HANDLER(search_result)
 {
 	OpnSession *session = (OpnSession *) udata;
@@ -144,7 +121,7 @@ OPN_HANDLER(search_result)
 	}
 	
 	ip = opn_packet_get_ip(packet);
-	path_nix = my_file_unix_path(path_orig);
+	path_nix = opn_unix_path(path_orig);
 	root = file_dirname(path_nix);
 
 	share_init(&share, path_nix);

@@ -118,7 +118,7 @@ static void on_upload_read(int fd, input_id input, void *udata)
 		return;
 	}
 
-	if (bytes = tcp_recv(con, buf, sizeof(buf) - 1) <= 0)
+	if ((bytes = tcp_recv(con, buf, sizeof(buf) - 1)) <= 0)
 		return;
 
 	buf[bytes] = 0;
@@ -139,7 +139,7 @@ static void on_upload_read(int fd, input_id input, void *udata)
 
 	if (OPN->upload_auth(OPN, net_ip_str(con->host),
 	    share, NULL) == UPLOAD_AUTH_ALLOW)
-		opn_download_start(user, share, offset, con);
+		opn_upload_start(user, share, offset, con);
 }
 
 void opn_upload_connect(int fd, input_id input, void *udata)

@@ -18,60 +18,10 @@
 #include "opn_opennap.h"
 #include <libgift/proto/share.h>
 #include "opn_search.h"
+#include "opn_utils.h"
 
 #define OPN_MAX_SEARCH_RESULTS 512
 #define OPN_SEARCH_TIMEOUT 120 * SECONDS
-
-static char **string_split(char *str, char *delim)
-{
-	List *list = NULL, *l;
-	char *tmp, *ptr, *token, **retval;
-	int i = 1;
-
-	if (!str || !delim)
-		return NULL;
-
-	ptr = tmp = strdup(str);
-
-	/* Find the tokens and add them to the list */
-	while ((token = string_sep(&tmp, delim)))
-	{
-		list = list_prepend(list, token);
-		i++;
-	}
-	
-	/* Now copy the tokens into the array */
-	if (!(retval = malloc(sizeof(char *) * i)))
-		return NULL;
-
-	retval[--i] = NULL;
-	
-	for (l = list; l; l = l->next)
-		retval[--i] = strdup(l->data);
-
-	list_free(list);
-	free(ptr);
-
-	return retval;
-}
-
-/**
- * Frees a string array built by \em str_split
- *
- * @param str String array to free
- */
-static void string_freev (char **str)
-{
-	char **ptr;
-
-	if (!str)
-		return;
-
-	for (ptr = str; *ptr; ptr++)
-		free(*ptr);
-
-	free(str);
-}
 
 static BOOL search_remove(OpnSearch *search)
 {
@@ -102,8 +52,8 @@ void opn_search_free(OpnSearch *search)
 	if (!search)
 		return;
 
-	string_freev(search->query);
-	string_freev(search->exclude);
+	opn_string_freev(search->query);
+	opn_string_freev(search->exclude);
 	timer_remove(search->timer);
 
 	OPN->search_complete(OPN, search->event);
@@ -192,8 +142,8 @@ BOOL opennap_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 
 	OPENNAP->searches = list_prepend(OPENNAP->searches, search);
 
-	search->query = string_split(query, " ");
-	search->exclude = string_split(exclude, " ");
+	search->query = opn_string_split(query, " ");
+	search->exclude = opn_string_split(exclude, " ");
 	search->event = event;
 	
 	for (l = OPENNAP->sessions; l; l = l->next) {
