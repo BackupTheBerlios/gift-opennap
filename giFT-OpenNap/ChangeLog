@@ -1,3 +1,10 @@
+2003-06-20 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_hash.[ch]: Added hashing functions
+        * src/opn_share.[ch]: Added sharing capabilities
+        * src/opn_search.[ch]: Improved query/exclude handling
+        * src/opn_packet.[ch]: Separated opn_packet_set_data()
+        * Code cleanup
+
 2003-06-16 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: Free searches on exit
         * src/opn_protocol_handlers: Search result fixes

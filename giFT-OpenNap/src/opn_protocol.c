@@ -26,6 +26,7 @@ static Handler handler_table[] = {
 	{OPN_CMD_DOWNLOAD_ACK, OPN_HANDLER_FUNC(download_ack)},
 	{OPN_CMD_DOWNLOAD_ERROR, OPN_HANDLER_FUNC(download_error)},
 	{OPN_CMD_STATS, OPN_HANDLER_FUNC(stats)},
+	{OPN_CMD_ERROR, OPN_HANDLER_FUNC(error)},
 	{OPN_CMD_PING, OPN_HANDLER_FUNC(ping)},
 	{OPN_CMD_NONE, NULL}
 };

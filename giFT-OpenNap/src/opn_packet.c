@@ -17,33 +17,13 @@
 
 #include "opn_opennap.h"
 
-/* Sets the payload of an OpnPacket
- * @param packet The OpnPacket whose payload is set
- * @data The payload of the OpnPacket
- * @size The size of the payload
- */
-static BOOL packet_set_data(OpnPacket *packet, char *data, uint16_t size)
-{
-	if (size > UINT16_MAX || !data || !size)
-		return FALSE;
-
-	free(packet->data);
-
-	if (!(packet->data = malloc(size)))
-		return FALSE;
-
-	memcpy(packet->data, data, size);
-	packet->data_size = size;
-
-	return TRUE;
-}
-
-/* Creates a new OpnPacket
+/**
+ * Creates a new OpnPacket
+ * 
  * @param cmd The command for the new OpnPacket
- * @param data The payload of the packet
- * @param size The size of the payload
+ * @return The newly created OpnPacket
  */
-OpnPacket *opn_packet_new(OpnCommand cmd, char *data, uint16_t size)
+OpnPacket *opn_packet_new(OpnCommand cmd)
 {
 	OpnPacket *packet;
 
@@ -56,16 +36,40 @@ OpnPacket *opn_packet_new(OpnCommand cmd, char *data, uint16_t size)
 
 	packet->cmd = cmd;
 
-	if (size && data)
-		if (!packet_set_data(packet, data, size)) {
-			free(packet);
-			packet = NULL;
-		}
-
 	return packet;
 }
 
-/* Frees a OpnPacket
+/**
+ * Sets the payload of an OpnPacket
+ * 
+ * @param packet The OpnPacket whose payload is set
+ * @param data The payload of the OpnPacket
+ * @return TRUE if successful
+ */
+BOOL opn_packet_set_data(OpnPacket *packet, char *data)
+{
+	uint16_t size;
+	
+	assert(packet);
+	assert(data);
+
+	size = strlen(data);
+	assert(size <= UINT16_MAX);
+	
+	free(packet->data);
+
+	if (!(packet->data = malloc(size)))
+		return FALSE;
+
+	memcpy(packet->data, data, size);
+	packet->data_size = size;
+
+	return TRUE;
+}
+
+/**
+ * Frees a OpnPacket
+ * 
  * @param packet The OpnPacket which should be freed
  */
 void opn_packet_free(OpnPacket *packet)
@@ -78,16 +82,18 @@ void opn_packet_free(OpnPacket *packet)
 	free(packet);
 }
 
-/* Serializes a OpnPacket
+/**
+ * Serializes a OpnPacket
+ * 
  * @param packet The OpnPacket which should be serialized
- * @return A pointer to the serialized data. This should not be freed!
+ * @return A pointer to the serialized data,
+ *         which must not not be freed!
  */
 static uint8_t *packet_serialize(OpnPacket *packet, long *ssize)
 {
 	uint16_t foo;
 	
-	if (!packet)
-		return NULL;
+	assert(packet);
 
 	free(packet->serialized);
 	
@@ -111,7 +117,9 @@ static uint8_t *packet_serialize(OpnPacket *packet, long *ssize)
 	return packet->serialized;
 }
 
-/* Unserializes a buffer into a OpnPacket.
+/**
+ * Unserializes a buffer into a OpnPacket.
+ *
  * @param data Data stream which is to be unserialized
  * @param size Amount of bytes to unserialize
  * @return The newly created OpnPacket
@@ -120,6 +128,7 @@ OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size)
 {
 	OpnPacket *packet;
 
+	assert(data);
 	assert(size >= OPN_PACKET_HEADER_LEN);
 
 	if (!(packet = malloc(sizeof(OpnPacket))))
@@ -147,7 +156,9 @@ OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size)
 	return packet;
 }
 
-/* Sends a packet
+/**
+ * Sends a OpnPacket using a TCPC
+ * 
  * @param packet The packet to send
  * @param con The connection the packet is sent over
  * @return TRUE on success, FALSE on failure
@@ -157,6 +168,9 @@ BOOL opn_packet_send(OpnPacket *packet, TCPC *con)
 	uint8_t *data;
 	long len = 0;
 
+	assert(packet);
+	assert(con);
+
 	if (!(data = packet_serialize(packet, &len)))
 		return FALSE;
 	
@@ -165,7 +179,9 @@ BOOL opn_packet_send(OpnPacket *packet, TCPC *con)
 	return TRUE;
 }
 
-/* Reads a packet and handles it.
+/**
+ * Reads a packet and handles it.
+ * 
  * @param con The connection to read the packet from
  * @param udata Arbitrary data probably needed in the handler functions
  * @return TRUE if a packet has been read, else FALSE.
@@ -176,6 +192,8 @@ BOOL opn_packet_recv(TCPC *con, void *udata)
 	uint8_t buf[2048];
 	int bytes;
 	uint16_t len;
+
+	assert(con);
 
 	/* get the length field of the message:
 	 * always in little-endian format

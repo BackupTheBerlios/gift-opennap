@@ -18,20 +18,15 @@
 #ifndef __OPN_NODE_H
 #define __OPN_NODE_H
 
-typedef enum {
-	OPN_NODE_STATE_OFFLINE,
-	OPN_NODE_STATE_ONLINE
-} OpnNodeState;
-
 typedef struct {
-	in_addr_t ip;
-	in_port_t port;
-	OpnNodeState state;
+	in_addr_t ip; /**< IP address */
+	in_port_t port; /**< Port */
+	BOOL connected; /**< TRUE if we are connected to this node */
 } OpnNode;
 
 typedef struct {
-	TCPC *con; /* connection for napigator */
-	List *nodes;
+	TCPC *con; /**< connection for napigator */
+	List *nodes; /**< List of nodes */
 } OpnNodeList;
 
 OpnNode *opn_node_new(in_addr_t ip, in_port_t port);

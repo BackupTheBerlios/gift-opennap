@@ -19,15 +19,17 @@
 #define __OPN_SEARCH_H
 
 typedef struct {
-	IFEvent *event;
-	char query[128];
-	char exclude[128];
-	uint32_t ref;
+	IFEvent *event; /**< Pointer to giFT's IFEvent structure */
+	
+	char **query; /**< Query tokens */
+	char **exclude; /**< Exclude tokens */
 
-	/* search will be removed after 90 seconds
-	 * without a reply
-	 */ 
-	timer_id timer;
+	uint32_t ref; /**< Reference count */
+
+	timer_id timer; /**< Timer used for automatic removal:
+	                 *   a OpnSearch will be removed after
+					 *   90 seconds without a reply
+					 */
 } OpnSearch;
 
 OpnSearch *opn_search_new();

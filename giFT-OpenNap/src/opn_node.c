@@ -95,8 +95,9 @@ void opn_nodelist_node_remove(OpnNodeList *nodelist, OpnNode *node)
 	opn_node_free(node);
 }
 
-static void on_napigator_read(int fd, input_id input, OpnNodeList *nodelist)
+static void on_napigator_read(int fd, input_id input, void *udata)
 {
+	OpnNodeList *nodelist = (OpnNodeList *) udata;
 	char buf[1024], ip[16], *ptr = buf;
 	int bytes;
 	in_port_t port;
@@ -134,8 +135,9 @@ static void on_napigator_read(int fd, input_id input, OpnNodeList *nodelist)
 	}
 }
 
-static void on_napigator_connect(int fd, input_id input, OpnNodeList *nodelist)
+static void on_napigator_connect(int fd, input_id input, void *udata)
 {
+	OpnNodeList *nodelist = (OpnNodeList *) udata;
 	char buf[] = "GET /servers.php?version=107&client=" OPENNAP_CLIENTNAME " HTTP/1.0\n\n";
 
 	if (net_sock_error(fd)) {
@@ -154,8 +156,8 @@ static void on_napigator_connect(int fd, input_id input, OpnNodeList *nodelist)
 	
 	tcp_send(nodelist->con, buf, strlen(buf));
 
-	input_add(fd, nodelist, INPUT_READ,
-	          (InputCallback) on_napigator_read, TIMEOUT_DEF);
+	input_add(fd, nodelist, INPUT_READ, on_napigator_read,
+	          TIMEOUT_DEF);
 }
 
 void opn_nodelist_refresh(OpnNodeList *nodelist)
@@ -170,7 +172,7 @@ void opn_nodelist_refresh(OpnNodeList *nodelist)
 		return;
 	
 	input_add(nodelist->con->fd, nodelist, INPUT_WRITE,
-	          (InputCallback) on_napigator_connect, TIMEOUT_DEF);
+	          on_napigator_connect, TIMEOUT_DEF);
 }
 
 BOOL opn_nodelist_save(OpnNodeList *nodelist)

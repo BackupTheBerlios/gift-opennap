@@ -20,6 +20,57 @@
 
 #define OPN_MAX_SEARCH_RESULTS 512
 
+static char **string_split(char *str, char *delim)
+{
+	List *list = NULL, *l;
+	char *tmp, *ptr, *token, **retval;
+	int i = 1;
+
+	if (!str || !delim)
+		return NULL;
+
+	ptr = tmp = strdup(str);
+
+	/* Find the tokens and add them to the list */
+	while ((token = string_sep(&tmp, delim)))
+	{
+		list = list_prepend(list, token);
+		i++;
+	}
+	
+	/* Now copy the tokens into the array */
+	if (!(retval = malloc(sizeof(char *) * i)))
+		return NULL;
+
+	retval[--i] = NULL;
+	
+	for (l = list; l; l = l->next)
+		retval[--i] = strdup(l->data);
+
+	list_free(list);
+	free(ptr);
+
+	return retval;
+}
+
+/**
+ * Frees a string array built by \em str_split
+ *
+ * @param str String array to free
+ */
+static void string_freev (char **str)
+{
+	char **ptr;
+
+	if (!str)
+		return;
+
+	for (ptr = str; *ptr; ptr++)
+		free(*ptr);
+
+	free(str);
+}
+
 static BOOL search_remove(OpnSearch *search)
 {
 	OPENNAP->searches = list_remove(OPENNAP->searches, search);
@@ -49,6 +100,8 @@ void opn_search_free(OpnSearch *search)
 	if (!search)
 		return;
 
+	string_freev(search->query);
+	string_freev(search->exclude);
 	timer_remove(search->timer);
 
 	opn_proto->search_complete(opn_proto, search->event);
@@ -79,28 +132,16 @@ uint32_t opn_search_unref(OpnSearch *search)
  * @param query
  * @return TRUE if the file matches the query
  */
-static BOOL file_cmp_query(char *file, char *query)
+static BOOL file_cmp_query(char *file, char **query)
 {
-	char *ptr, *tmp, *token;
+	char **ptr;
 
 	assert(query);
 	assert(file);
 
-	if (string_isempty(query))
-		return FALSE;
-
-	if (!strchr(query, ' '))
-		return (strcasestr(file, query) != NULL);
-	
-	ptr = tmp = strdup(query);
-
-	while ((token = string_sep(&tmp, " ")))
-		if (strcasestr(file, token)) {
-			free(ptr);
+	for (ptr = query; *ptr; ptr++)
+		if (strcasestr(file, *ptr))
 			return TRUE;
-		}
-
-	free(ptr);
 
 	return FALSE;
 }
@@ -113,17 +154,14 @@ OpnSearch *opn_search_find(char *file)
 {
 	OpnSearch *search;
 	List *l;
-	BOOL match_query, match_excl;
 
 	assert(file);
 
 	for (l = OPENNAP->searches; l; l = l->next) {
 		search = (OpnSearch *) l->data;
 
-		match_query = file_cmp_query(file, search->query);
-		match_excl = file_cmp_query(file, search->exclude);
-		
-		if (match_query && !match_excl)
+		if (file_cmp_query(file, search->query)
+		    && !file_cmp_query(file, search->exclude))
 			return search;
 	}
 
@@ -144,21 +182,22 @@ BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 
 	OPENNAP->searches = list_prepend(OPENNAP->searches, search);
 
-	snprintf(search->query, sizeof(search->query), query);
-	snprintf(search->exclude, sizeof(search->exclude), exclude);
+	search->query = string_split(query, " ");
+	search->exclude = string_split(exclude, " ");
 	search->event = event;
 	
 	for (l = OPENNAP->sessions; l; l = l->next) {
 		session = (OpnSession *) l->data;
 		
-		if (session->state != OPN_SESSION_STATE_CONNECTED)
+		if (!session->node->connected)
 			continue;
 
 		snprintf(buf, sizeof(buf),
 		         "MAX_RESULTS %i FILENAME CONTAINS \"%s\"",
 		         OPN_MAX_SEARCH_RESULTS, query);
 
-		if (!(packet = opn_packet_new(OPN_CMD_SEARCH, buf, strlen(buf))))
+		if (!(packet = opn_packet_new(OPN_CMD_SEARCH))
+		    || !opn_packet_set_data(packet, buf))
 			continue;
 
 		opn_packet_send(packet, session->con);

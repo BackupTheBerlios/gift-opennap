@@ -17,12 +17,14 @@
 
 #define __OPN_OPENNAP_C
 #include "opn_opennap.h"
+#include <libgift/proto/share.h>
 #include "opn_share.h"
 #include "opn_search.h"
 #include "opn_download.h"
+#include "opn_upload.h"
+#include "opn_hash.h"
 
 Protocol *opn_proto = NULL;
-static timer_id timer_connect = 0;
 
 BOOL opn_is_connected()
 {
@@ -32,7 +34,7 @@ BOOL opn_is_connected()
 	for (l = OPENNAP->sessions; l; l = l->next) {
 		session = (OpnSession *) l->data;
 
-		if (session->state == OPN_SESSION_STATE_CONNECTED)
+		if (session->node->connected)
 			return TRUE;
 	}
 
@@ -51,7 +53,7 @@ static BOOL opn_connect(void *udata)
 	for (l = OPENNAP->nodelist->nodes; l; l = l->next) {
 		node = (OpnNode *) l->data;
 		
-		if (node->state == OPN_NODE_STATE_OFFLINE) {
+		if (!node->connected) {
 			if (!(session = opn_session_new()))
 				return TRUE;
 
@@ -69,20 +71,21 @@ static BOOL opn_connect(void *udata)
 
 void main_timer()
 {
-	timer_connect = timer_add(30 * SECONDS,
+	OPENNAP->timer_connect = timer_add(30 * SECONDS,
 	                          (TimerCallback) opn_connect, NULL);
 }
 
 static int gift_cb_stats(Protocol *p, unsigned long *users,
-                         unsigned long *files,
-                         double *size, Dataset **extra)
+                         unsigned long *files, double *size,
+                         Dataset **extra)
 {
 	OpnSession *session;
 	List *l;
+	int i;
 
 	*users = *files = *size = 0;
 
-	for (l = OPENNAP->sessions; l; l = l->next) {
+	for (l = OPENNAP->sessions, i = 0; l; l = l->next, i++) {
 		session = (OpnSession *) l->data;
 
 		*users += session->stats.users;
@@ -90,7 +93,7 @@ static int gift_cb_stats(Protocol *p, unsigned long *users,
 		*size += session->stats.size;
 	}
 
-	return 1;
+	return i;
 }
 
 static Config *config_load()
@@ -110,7 +113,8 @@ static Config *config_load()
 	return cfg;
 }
 
-/* Creates a random username and saves it to OPENNAP->cfg
+/**
+ * Creates a random username and stores it in OPENNAP->cfg
  */
 static void set_username()
 {
@@ -140,13 +144,24 @@ static BOOL gift_cb_start(Protocol *p)
 		return FALSE;
 	}
 
+#if 0
+	if (!(OPENNAP->con = tcp_bind(OPENNAP_DATAPORT, FALSE)))
+		return FALSE;
+	
+	input_add(OPENNAP->con->fd, NULL, INPUT_READ, opn_upload_connect,
+	          TIMEOUT_DEF);
+#endif
+	
 	set_username();
 
 	OPENNAP->nodelist = opn_nodelist_new();
 
-	/* opn_nodelist_load(OPENNAP->nodelist); */
+#if 0
+	opn_nodelist_load(OPENNAP->nodelist);
+#endif
+
 	opn_nodelist_refresh(OPENNAP->nodelist);
-	
+
 	return TRUE;
 }
 
@@ -155,11 +170,17 @@ static void gift_cb_destroy(Protocol *p)
 	if (!OPENNAP)
 		return;
 
-	timer_remove(timer_connect);
+	timer_remove(OPENNAP->timer_connect);
 
-	/* opn_nodelist_save(OPENNAP->nodelist); */
+#if 0
+	opn_nodelist_save(OPENNAP->nodelist);
+#endif
 
 	config_free(OPENNAP->cfg);
+
+#if 0
+	tcp_close(OPENNAP->con);
+#endif
 
 	if (OPENNAP->searches)
 		opn_searches_free(OPENNAP->searches);
@@ -173,6 +194,9 @@ static void gift_cb_destroy(Protocol *p)
 
 static void setup_callbacks(Protocol *p)
 {
+	p->hash_handler(p, OPENNAP_HASH, HASH_PRIMARY,
+	                (HashFn) opn_hash, (HashDspFn) strdup);
+	
 	p->start = gift_cb_start;
 	p->destroy = gift_cb_destroy;
 
@@ -182,11 +206,11 @@ static void setup_callbacks(Protocol *p)
 	p->download_stop = gift_cb_download_stop;
 	p->source_remove = gift_cb_source_remove;
 
-#if 0
+	p->share_sync = gift_cb_share_sync;
+	p->share_add = gift_cb_share_add;
+	p->share_remove = gift_cb_share_remove;
 	p->share_hide = gift_cb_share_hide;
-	p->share_show = gift_cb_share_show;
-#endif
-	
+
 	p->stats = gift_cb_stats;
 }
 

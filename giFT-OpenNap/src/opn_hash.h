@@ -15,17 +15,10 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __OPN_SHARE_H
-#define __OPN_SHARE_H
+#ifndef __OPN_HASH_H
+#define __OPN_HASH_H
 
-void gift_cb_share_sync(Protocol *p, BOOL begin);
-BOOL gift_cb_share_add(Protocol *p, Share *file, void *udata);
-BOOL gift_cb_share_remove(Protocol *p, Share *file, void *udata);
-void gift_cb_share_hide(Protocol *p);
-
-BOOL opn_share_syncing();
-BOOL opn_share_enabled();
-void opn_share_refresh(OpnSession *session);
+uint8_t *opn_hash(char *file, size_t *len);
 
 #endif
 

@@ -103,6 +103,7 @@ static char *url_decode(char *encoded)
 					*ptr = (char) oct_val;
 					string_move(ptr + 1, ptr + 3);
 				}
+
 				break;
 			default:
 				break;

@@ -43,8 +43,8 @@ BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 	snprintf(buf, sizeof(buf), "%s \"%s\"", download->url->user,
 	         download->url->file);
 
-	if (!(packet = opn_packet_new(OPN_CMD_DOWNLOAD_REQUEST,
-	                              buf, strlen(buf))))
+	if (!(packet = opn_packet_new(OPN_CMD_DOWNLOAD_REQUEST))
+	    || !opn_packet_set_data(packet, buf))
 		return FALSE;
 	
 	ret = opn_packet_send(packet, session->con);
@@ -87,8 +87,9 @@ void opn_download_free(OpnDownload *dl)
 	free(dl);
 }
 
-static void on_download_read_data(int fd, input_id input, OpnDownload *download)
+static void on_download_read_data(int fd, input_id input, void *udata)
 {
+	OpnDownload *download = (OpnDownload *) udata;
 	uint8_t buf[2048];
 	int bytes;
 	
@@ -101,11 +102,13 @@ static void on_download_read_data(int fd, input_id input, OpnDownload *download)
 		opn_download_free(download);
 
 	opn_proto->chunk_write(opn_proto, download->chunk->transfer,
-	                       download->chunk, download->chunk->source, buf, bytes);
+	                       download->chunk, download->chunk->source,
+	                       buf, bytes);
 }
 
-static void on_download_read_filesize(int fd, input_id input, OpnDownload *download)
+static void on_download_read_filesize(int fd, input_id input, void *udata)
 {
+	OpnDownload *download = (OpnDownload *) udata;
 	uint8_t buf[128];
 	int bytes, i;
 	uint32_t size = 0;
@@ -130,12 +133,13 @@ static void on_download_read_filesize(int fd, input_id input, OpnDownload *downl
 	
 	tcp_recv(download->con, buf, i);
 
-	input_add(fd, download, INPUT_READ,
-	          (InputCallback) on_download_read_data, TIMEOUT_DEF);
+	input_add(fd, download, INPUT_READ, on_download_read_data,
+	          TIMEOUT_DEF);
 }
 
-static void on_download_write(int fd, input_id input, OpnDownload *download)
+static void on_download_write(int fd, input_id input, void *udata)
 {
+	OpnDownload *download = (OpnDownload *) udata;
 	char buf[PATH_MAX + 256];
 	
 	if (net_sock_error(fd)) {
@@ -153,12 +157,13 @@ static void on_download_write(int fd, input_id input, OpnDownload *download)
 
 	tcp_send(download->con, buf, strlen(buf));
 
-	input_add(fd, download, INPUT_READ,
-	          (InputCallback) on_download_read_filesize, TIMEOUT_DEF);
+	input_add(fd, download, INPUT_READ, on_download_read_filesize,
+	          TIMEOUT_DEF);
 }
 
-static void on_download_connect(int fd, input_id input, OpnDownload *download)
+static void on_download_connect(int fd, input_id input, void *udata)
 {
+	OpnDownload *download = (OpnDownload *) udata;
 	char c;
 	
 	if (net_sock_error(fd)) {
@@ -171,8 +176,8 @@ static void on_download_connect(int fd, input_id input, OpnDownload *download)
 	if (tcp_recv(download->con, &c, 1) <= 0 || c != '1')
 		opn_download_free(download);
 
-	input_add(fd, download, INPUT_WRITE,
-	          (InputCallback) on_download_write, TIMEOUT_DEF);
+	input_add(fd, download, INPUT_WRITE, on_download_write,
+	          TIMEOUT_DEF);
 }
 
 void opn_download_start(OpnDownload *download)
@@ -184,7 +189,7 @@ void opn_download_start(OpnDownload *download)
 		return;
 	
 	input_add(download->con->fd, download, INPUT_READ,
-	          (InputCallback) on_download_connect, TIMEOUT_DEF);
+	          on_download_connect, TIMEOUT_DEF);
 }
 
 OpnDownload *opn_download_find(OpnUrl *url)

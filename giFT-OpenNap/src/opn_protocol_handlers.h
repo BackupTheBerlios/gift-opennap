@@ -29,6 +29,8 @@ OPN_HANDLER(download_error);
 
 OPN_HANDLER(stats);
 
+OPN_HANDLER(error);
+
 OPN_HANDLER(ping);
 
 #endif

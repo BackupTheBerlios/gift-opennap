@@ -19,10 +19,15 @@
 #include <libgift/proto/share.h>
 #include "opn_download.h"
 #include "opn_search.h"
+#include "opn_share.h"
 
 OPN_HANDLER(login_error)
 {
 	assert(udata);
+
+#ifdef OPENNAP_DEBUG
+	printf("%s\n", data);
+#endif
 
 	OPENNAP->sessions = list_remove(OPENNAP->sessions, udata);
 	opn_session_free((OpnSession *) udata);
@@ -34,8 +39,10 @@ OPN_HANDLER(login_ack)
 
 	assert(session);
 	
-	session->state = OPN_SESSION_STATE_CONNECTED;
-	session->node->state = OPN_NODE_STATE_ONLINE;
+	session->node->connected = TRUE;
+
+	if (opn_share_enabled && !opn_share_syncing)
+		opn_share_refresh(session);
 }
 
 OPN_HANDLER(stats)
@@ -51,6 +58,13 @@ OPN_HANDLER(stats)
 	       &session->stats.size);
 }
 
+OPN_HANDLER(error)
+{
+#ifdef OPENNAP_DEBUG
+	printf("%s\n", data);
+#endif
+}
+
 OPN_HANDLER(ping)
 {
 	OpnSession *session = (OpnSession *) udata;
@@ -58,34 +72,12 @@ OPN_HANDLER(ping)
 
 	assert(session);
 
-	if (!(packet = opn_packet_new(OPN_CMD_PONG, data, strlen(data))))
+	if (!(packet = opn_packet_new(OPN_CMD_PONG))
+	    || !opn_packet_set_data(packet, data))
 		return;
 
 	opn_packet_send(packet, session->con);
 	opn_packet_free(packet);
-}
-
-static char *get_filename(char *path)
-{
-	char *ptr;
-
-	assert(path);
-
-	if ((ptr = strrchr(path, '/')) && !string_isempty(++ptr))
-		return ptr;
-	else
-		return NULL;
-}
-
-static char *get_directory(char *path)
-{
-	char buf[PATH_MAX + 1];
-
-	assert(path);
-
-	snprintf(buf, get_filename(path) - path, path);
-
-	return strdup(buf);
 }
 
 /* temporary, until giFT's function is fixed */
@@ -94,7 +86,9 @@ char *my_file_unix_path (char *host_path)
 	char *unix_path;
 	char *ptr;
 
-	if (!(unix_path = STRDUP(host_path)))
+	assert(host_path);
+
+	if (!(unix_path = strdup(host_path)))
 		return NULL;
 
 	if (host_path[1] == ':') {
@@ -130,15 +124,15 @@ OPN_HANDLER(search_result)
 	tmp[0] = 0;
 
 	sscanf(data, "\"%[^\"]\" %32s %u %s %s %s %63s %u %*[^\n]", tmp, md5,
-			&filesize, bitrate, frequency, length, user, &ip);
+	       &filesize, bitrate, frequency, length, user, &ip);
 
 	if (!user)
 		return;
 
 	/* FIXME */
 	path = my_file_unix_path(tmp);
-	file = get_filename(path);
-	root = get_directory(path);
+	file = file_basename(path);
+	root = file_dirname(path);
 
 	/* now find the search this searchresult might belong to
 	 * .oO(stupid napster)
@@ -160,8 +154,8 @@ OPN_HANDLER(search_result)
 	opn_url_set_server(&url, session->node->ip, session->node->port);
 
 	opn_proto->search_result(opn_proto, search->event,
-			user, NULL, opn_url_serialize(&url),
-			1, &share);
+	                         user, NULL, opn_url_serialize(&url),
+	                         1, &share);
 
 	share_finish(&share);
 

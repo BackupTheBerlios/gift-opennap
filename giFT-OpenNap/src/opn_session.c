@@ -19,8 +19,10 @@
 #include "opn_node.h"
 #include "opn_protocol.h"
 
-static void on_session_read(int fd, input_id input, OpnSession *session)
+static void on_session_read(int fd, input_id input, void *udata)
 {
+	OpnSession *session = (OpnSession *) udata;
+	
 	if (net_sock_error(fd)) {
 		OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
 		opn_session_free(session);
@@ -39,25 +41,26 @@ static void session_login(OpnSession *session)
 	         OPENNAP_CLIENTNAME " " VERSION "\" 0",
 	         OPENNAP_USERNAME, OPENNAP_DATAPORT);
 	
-	if (!(packet = opn_packet_new(OPN_CMD_LOGIN, buf, strlen(buf))))
+	if (!(packet = opn_packet_new(OPN_CMD_LOGIN))
+	    || !opn_packet_set_data(packet, buf))
 		return;
 
 	opn_packet_send(packet, session->con);
 	opn_packet_free(packet);
 }
 
-static void on_session_connect(int fd, input_id input, OpnSession *session)
+static void on_session_connect(int fd, input_id input, void *udata)
 {
+	OpnSession *session = (OpnSession *) udata;
+	
 	if (net_sock_error(fd)) {
 		OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
 		opn_session_free(session);
 		return;
 	}
 
-	session->state = OPN_SESSION_STATE_HANDSHAKING;
-
 	input_remove(input);
-	input_add(fd, session, INPUT_READ, (InputCallback) on_session_read, TIMEOUT_DEF);
+	input_add(fd, session, INPUT_READ, on_session_read, TIMEOUT_DEF);
 
 	session_login(session);
 }
@@ -71,9 +74,9 @@ BOOL opn_session_connect(OpnSession *session, OpnNode *node)
 		return FALSE;
 
 	session->node = node;
-	session->state = OPN_SESSION_STATE_CONNECTING;
 
-	input_add(session->con->fd, session, INPUT_WRITE, (InputCallback) on_session_connect, TIMEOUT_DEF);
+	input_add(session->con->fd, session, INPUT_WRITE,
+	          on_session_connect, TIMEOUT_DEF);
 	
 	return TRUE;
 }
@@ -97,6 +100,8 @@ void opn_session_free(OpnSession *session)
 
 	if (session->con)
 		tcp_close(session->con);
+
+	session->node->connected = FALSE;
 
 	free(session);
 }

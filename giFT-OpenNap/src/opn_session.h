@@ -18,24 +18,16 @@
 #ifndef __OPN_SESSION_H
 #define __OPN_SESSION_H
 
-typedef enum {
-	OPN_SESSION_STATE_DISCONNECTED,
-	OPN_SESSION_STATE_CONNECTING,
-	OPN_SESSION_STATE_HANDSHAKING,
-	OPN_SESSION_STATE_CONNECTED,
-} OpnSessionState;
-
 typedef struct {
-	uint32_t users;
-	uint32_t files;
-	double size; /* Given in GB */
+	uint32_t users; /**< Number of users online */
+	uint32_t files; /**< Number of files shared */
+	double size; /**< Amount of shares (GB) */
 } OpnStats;
 
 typedef struct {
-	TCPC *con;
-	OpnSessionState state;
-	OpnNode *node;
-	OpnStats stats;
+	TCPC *con; /**< Connection */
+	OpnNode *node; /**< Pointer to the node this sessions is based on */
+	OpnStats stats; /** Stats */
 } OpnSession;
 
 OpnSession *opn_session_new();

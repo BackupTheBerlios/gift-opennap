@@ -34,15 +34,16 @@
 typedef struct _OpnPacket {
 	OpnCommand cmd;
 	
-	char *data; /* payload */
-	uint16_t data_size; /* payload's size */
+	char *data; /**< payload */
+	uint16_t data_size; /**< payload's size */
 	
-	uint8_t *serialized; /* serialized data */
+	uint8_t *serialized; /**< serialized data */
 } OpnPacket;
 
-OpnPacket *opn_packet_new(OpnCommand cmd, char *data, uint16_t size);
+OpnPacket *opn_packet_new(OpnCommand cmd);
 void opn_packet_free(OpnPacket *packet);
 
+BOOL opn_packet_set_data(OpnPacket *packet, char *data);
 OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size);
 
 BOOL opn_packet_send(OpnPacket *packet, TCPC *con);
