@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.c,v 1.27 2003/08/14 20:57:02 tsauerbeck Exp $
+ * $Id: opn_opennap.c,v 1.28 2003/08/15 13:11:58 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -231,7 +231,7 @@ BOOL OpenNap_init(Protocol *p)
 {
 	OpnPlugin *plugin;
 	
-	if (protocol_compat(p, LIBGIFTPROTO_VERSION))
+	if (protocol_compat(p, LIBGIFTPROTO_MKVERSION(0, 11, 3)))
 		return FALSE;
 
 	OPN = p;
@@ -242,6 +242,7 @@ BOOL OpenNap_init(Protocol *p)
 	memset(plugin, 0, sizeof(OpnPlugin));
 
 	p->udata = plugin;
+	p->version_str = strdup(VERSION);
 
 	setup_callbacks(p);
 	

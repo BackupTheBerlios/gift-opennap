@@ -1,4 +1,8 @@
-$Id: ChangeLog,v 1.31 2003/08/14 20:57:02 tsauerbeck Exp $
+$Id: ChangeLog,v 1.32 2003/08/15 13:11:58 tsauerbeck Exp $
+
+2003-08-15 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_opennap.c: Tell giFT about our version using
+          p->version_str
 
 2003-08-14 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_share.c: Meta data is submitted correctly now
