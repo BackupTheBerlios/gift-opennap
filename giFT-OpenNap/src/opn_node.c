@@ -98,7 +98,7 @@ void opn_nodelist_node_remove(OpnNodeList *nodelist, OpnNode *node)
 static void on_napigator_read(int fd, input_id input, void *udata)
 {
 	OpnNodeList *nodelist = (OpnNodeList *) udata;
-	char buf[1024], ip[16], *ptr = buf;
+	char buf[RW_BUFFER], ip[16], *ptr = buf;
 	int bytes;
 	in_port_t port;
 
@@ -110,7 +110,7 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 	
 	memset(&buf, 0, sizeof(buf));
 
-	if ((bytes = tcp_recv(nodelist->con, buf, sizeof(buf))) <= 0) {
+	if ((bytes = tcp_recv(nodelist->con, buf, sizeof(buf) - 1)) <= 0) {
 		/* so now we got our serverlist... connect! */
 		tcp_close(nodelist->con);
 		nodelist->con = NULL;
@@ -119,9 +119,9 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 	
 	buf[bytes] = 0;
 
-	if (!strncmp(buf, "HTTP", 4)) {
+	if (!strncmp(ptr, "HTTP", 4)) {
 		/* position the pointer behind the HTTP header */
-		if (!(ptr = strstr(buf, "\r\n\r\n")) || !(ptr += 4))
+		if (!(ptr = strstr(ptr, "\r\n\r\n")) || !(ptr += 4))
 			return;
 	}
 	

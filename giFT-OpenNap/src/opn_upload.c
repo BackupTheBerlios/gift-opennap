@@ -90,7 +90,7 @@ static void on_upload_read(int fd, input_id input, void *udata)
 		return;
 	}
 
-	if (bytes = tcp_recv(con, buf, sizeof(buf)) <= 0)
+	if (bytes = tcp_recv(con, buf, sizeof(buf) - 1) <= 0)
 		return;
 
 	buf[bytes] = 0;

@@ -20,6 +20,7 @@
 #include "opn_search.h"
 
 #define OPN_MAX_SEARCH_RESULTS 512
+#define OPN_SEARCH_TIMEOUT 120 * SECONDS
 
 static char **string_split(char *str, char *delim)
 {
@@ -90,7 +91,7 @@ OpnSearch *opn_search_new()
 	memset(search, 0, sizeof(OpnSearch));
 
 	opn_search_ref(search);
-	search->timer = timer_add(90 * SECONDS,
+	search->timer = timer_add(OPN_SEARCH_TIMEOUT,
 	                          (TimerCallback) search_remove, search);
 
 	return search;
@@ -216,6 +217,10 @@ BOOL opennap_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 
 		opn_search_ref(search);
 	}
+
+#ifdef OPENNAP_DEBUG
+	OPN->DBGFN(OPN, "sent out %i search packets\n", search->ref - 1);
+#endif
 
 	return (opn_search_unref(search) > 0);
 }
