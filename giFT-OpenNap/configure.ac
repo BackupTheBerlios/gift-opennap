@@ -1,8 +1,11 @@
-dnl $Id: configure.ac,v 1.5 2003/08/05 07:51:37 tsauerbeck Exp $
+dnl $Id: configure.ac,v 1.6 2003/08/18 09:29:14 tsauerbeck Exp $
 
-AC_INIT(src/opn_opennap.c)
-AM_INIT_AUTOMAKE(giFT-OpenNap, 0.0.1)
+AC_PREREQ(2.53)
 
+AC_INIT(giFT-OpenNap, 0.0.1, gift-opennap-devel@lists.berlios.de, giFT-OpenNap)
+AC_CONFIG_SRCDIR([src/opn_opennap.c])
+
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
 AH_TEMPLATE([OPENNAP_DEBUG], [Define to 1 if you want debugging output])
@@ -27,16 +30,18 @@ AC_ARG_ENABLE(debug,
 		])
 
 GIFT_PLUGIN_PREFIX
-GIFT_PLUGIN_PKGCONFIG(GIFT_OPENNAP, 0.11.1, 0.12.0)
+GIFT_PLUGIN_PKGCONFIG(GIFT_OPENNAP, 0.11.3, 0.12.0)
 
 AC_CHECK_FUNCS(strcasestr)
 
 GIFT_PLUGIN_INSTALL_PATH
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 data/Makefile
 m4/Makefile
 src/Makefile
 ])
+
+AC_OUTPUT
 
