@@ -55,6 +55,10 @@ char *opn_unix_path(char *path)
 	return unix_path;
 }
 
+/** Splits a string into tokens delimited by \em delim
+ *
+ * @return String array, must be freed using opn_string_freev
+ */
 char **opn_string_split(char *str, char *delim)
 {
 	List *list = NULL, *l;
@@ -88,7 +92,7 @@ char **opn_string_split(char *str, char *delim)
 }
 
 /**
- * Frees a string array built by \em str_split
+ * Frees a string array built by \em opn_string_split
  *
  * @param str String array to free
  */

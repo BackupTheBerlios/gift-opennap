@@ -78,14 +78,8 @@ extern Protocol *OPN;
 #define OPN_MSG_FILENOTSHARED "FILE NOT SHARED"
 #define OPN_MSG_INVALIDREQUEST "INVALID REQUEST"
 
-#define OPN_NAPIGATOR_IP "216.116.119.192"
-
-/* Called by giFT to init plugin */
-#ifdef WIN32
-BOOL __declspec(dllexport) OpenNap_init(Protocol *p);
-#else
-BOOL OpenNap_init(Protocol *p);
-#endif
+#define OPN_NAPIGATOR_IP \
+	config_get_str(OPENNAP->cfg, "main/napigator_ip=216.116.119.192")
 
 void main_timer();
 BOOL opn_is_connected();

@@ -163,7 +163,6 @@ static void nodelist_load_napigator(OpnNodeList *nodelist)
 	if (nodelist->con)
 		tcp_close(nodelist->con);
 
-	/* FIXME lookup the ip of www.napigator.com here ;) */
 	if (!(nodelist->con = tcp_open(net_ip(OPN_NAPIGATOR_IP), 80,
 	                               FALSE)))
 		return;

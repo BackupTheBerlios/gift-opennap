@@ -52,18 +52,19 @@ static BOOL opn_connect(void *udata)
 	
 	for (l = OPENNAP->nodelist->nodes; l; l = l->next) {
 		node = (OpnNode *) l->data;
-		
-		if (!node->connected) {
-			if (!(session = opn_session_new()))
-				return TRUE;
+	
+		/* Check whether we are already connected to that node */
+		if (node->connected)
+			continue;
 
-			OPENNAP->sessions = list_prepend(OPENNAP->sessions, session);
-			
-			if (!opn_session_connect(session, node)) {
-				OPENNAP->sessions = list_remove(OPENNAP->sessions,
-				                                session);
-				opn_session_free(session);
-			}
+		if (!(session = opn_session_new()))
+			return TRUE;
+
+		OPENNAP->sessions = list_prepend(OPENNAP->sessions, session);
+
+		if (!opn_session_connect(session, node)) {
+			OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
+			opn_session_free(session);
 		}
 	}
 
@@ -221,14 +222,6 @@ BOOL OpenNap_init(Protocol *p)
 	if (protocol_compat(p, LIBGIFTPROTO_VERSION))
 		return FALSE;
 
-	/* tell our debugger to insert a breakpoint here
-	 * this only works on x86 and GLibC 2
-	 */
-#if defined OPENNAP_DEBUG \
-	&& defined (__i386__) && defined (__GNUC__) && __GNUC__ >= 2
-	__asm__ __volatile__ ("int $03");
-#endif
-	 
 	OPN = p;
 
 	if (!(plugin = malloc(sizeof(OpnPlugin))))

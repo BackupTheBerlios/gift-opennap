@@ -1,3 +1,7 @@
+2003-07-12 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_opennap.c: Removed breakpoint instruction
+        * src/opn_opennap.h: Added a config key for napigator's IP
+
 2003-07-11 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: Fixed copying of OpenNap.conf if it's
           not present in ~/.giFT/OpenNap

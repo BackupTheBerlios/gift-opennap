@@ -70,6 +70,5 @@ $ run
 (wait until it breaks)
 $ backtrace
 
-...and send me the output. Note that if you are on x86,
-gdb will break shortly after startup. Just type "next" in that case.
+...and send me the output.
 
