@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol_handlers.c,v 1.19 2003/08/08 14:35:07 tsauerbeck Exp $
+ * $Id: opn_protocol_handlers.c,v 1.20 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -37,7 +37,7 @@ OPN_HANDLER(login_error)
 
 OPN_HANDLER(login_ack)
 {
-	session->node->connected = TRUE;
+	session->node->state = OPN_NODE_STATE_CONNECTED;
 	
 	if (opn_share_enabled() && !opn_share_syncing())
 		opn_share_refresh(session);

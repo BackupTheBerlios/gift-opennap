@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_url.c,v 1.10 2003/08/08 14:35:07 tsauerbeck Exp $
+ * $Id: opn_url.c,v 1.11 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -124,13 +124,13 @@ OpnUrl *opn_url_unserialize(char *data)
 
 char *opn_url_serialize(OpnUrl *url)
 {
-	char *user, *file, client[16];
+	char *user, *file, *client;
 	
 	assert(url);
 
 	user = opn_url_encode(url->user);
 	file = opn_url_encode(url->file);
-	snprintf(client, sizeof(client), "%s", net_ip_str(url->client.ip));
+	client = stringf("%s", net_ip_str(url->client.ip));
 
 	url->serialized = stringf_dup("OpenNap://%s:%hu@%s:%hu?user=%s"
 	                              "&size=%u&file=%s",

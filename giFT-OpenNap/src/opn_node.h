@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_node.h,v 1.5 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_node.h,v 1.6 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -21,10 +21,16 @@
 #ifndef __OPN_NODE_H
 #define __OPN_NODE_H
 
+typedef enum {
+	OPN_NODE_STATE_DISCONNECTED,
+	OPN_NODE_STATE_CONNECTING,
+	OPN_NODE_STATE_CONNECTED
+} OpnNodeConnectionState;
+
 typedef struct {
 	in_addr_t ip; /**< IP address */
 	in_port_t port; /**< Port */
-	BOOL connected; /**< TRUE if we are connected to this node */
+	OpnNodeConnectionState state;
 } OpnNode;
 
 typedef struct {

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_upload.c,v 1.12 2003/08/09 09:56:34 tsauerbeck Exp $
+ * $Id: opn_upload.c,v 1.13 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -79,13 +79,11 @@ static void on_upload_send_filesize(int fd, input_id input,
                                     void *udata)
 {
 	OpnUpload *upload = (OpnUpload *) udata;
-	char buf[16];
 
 	input_remove(input);
 
-	snprintf(buf, sizeof(buf), "%lu",
-	         upload->chunk->stop - upload->chunk->start);
-	tcp_writestr(upload->con, buf);
+	tcp_writestr(upload->con, stringf("%lu",
+	             upload->chunk->stop - upload->chunk->start));
 	
 	input_add(upload->con->fd, upload, INPUT_WRITE,
 	          on_upload_write, TIMEOUT_DEF);
@@ -119,7 +117,6 @@ static void on_upload_read(int fd, input_id input, void *udata)
 	TCPC *con = (TCPC *) udata;
 	Share *share;
 	char buf[PATH_MAX + 256], file[PATH_MAX + 1] = {0}, user[64] = {0};
-	char fmt[32];
 	int bytes;
 	uint32_t offset = 0;
 
@@ -133,9 +130,8 @@ static void on_upload_read(int fd, input_id input, void *udata)
 
 	input_remove(input);
 
-	snprintf(fmt, sizeof(fmt), "%%%is \"%%%i[^\"]\" %%lu",
-	         sizeof(user) - 1, PATH_MAX);
-	sscanf(&buf[3], fmt, user, file, &offset);
+	sscanf(&buf[3], stringf("%%%is \"%%%i[^\"]\" %%lu",
+	       sizeof(user) - 1, PATH_MAX), user, file, &offset);
 	
 	if (!(share = OPN->share_lookup(OPN, SHARE_LOOKUP_HPATH, file))) {
 		tcp_close(con);

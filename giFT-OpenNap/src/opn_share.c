@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_share.c,v 1.9 2003/08/08 14:35:07 tsauerbeck Exp $
+ * $Id: opn_share.c,v 1.10 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -60,7 +60,7 @@ void opn_share_refresh(OpnSession *session)
 	assert(session);
 	assert(session->node);
 
-	if (!session->node->connected)
+	if (session->node->state != OPN_NODE_STATE_CONNECTED)
 		return;
 
 	for (l = OPENNAP->shares; l; l = l->next) {
@@ -102,7 +102,7 @@ void share_remove()
 	for (l = OPENNAP->sessions; l; l = l->next) {
 		session = (OpnSession *) l->data;
 
-		if (!session->node->connected)
+		if (session->node->state != OPN_NODE_STATE_CONNECTED)
 			continue;
 
 		if ((packet = opn_packet_new())) {

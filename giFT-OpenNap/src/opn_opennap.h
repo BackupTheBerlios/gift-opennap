@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.h,v 1.13 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_opennap.h,v 1.14 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -84,8 +84,8 @@ extern Protocol *OPN;
 #define OPN_NAPIGATOR_IP \
 	config_get_str(OPENNAP->cfg, "main/napigator_ip=216.116.119.192")
 
-void main_timer();
-BOOL opn_is_connected();
+void opn_connect();
+uint32_t opn_connection_count();
 
 #endif
 

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_session.c,v 1.15 2003/08/08 14:35:07 tsauerbeck Exp $
+ * $Id: opn_session.c,v 1.16 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -73,6 +73,7 @@ BOOL opn_session_connect(OpnSession *session, OpnNode *node)
 		return FALSE;
 
 	session->node = node;
+	session->node->state = OPN_NODE_STATE_CONNECTING;
 
 	input_add(session->con->fd, session, INPUT_WRITE,
 	          on_session_connect, TIMEOUT_DEF);
@@ -101,7 +102,7 @@ void opn_session_free(OpnSession *session)
 		tcp_close(session->con);
 
 	if (session->node)
-		session->node->connected = FALSE;
+		session->node->state = OPN_NODE_STATE_DISCONNECTED;
 
 	free(session);
 }

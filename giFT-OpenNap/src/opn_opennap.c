@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.c,v 1.22 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_opennap.c,v 1.23 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -29,35 +29,39 @@
 
 Protocol *OPN = NULL;
 
-BOOL opn_is_connected()
+/**
+ * @return	Number of servers we are connected to
+ */
+uint32_t opn_connection_count()
 {
 	OpnSession *session;
 	List *l;
+	uint32_t i;
 	
-	for (l = OPENNAP->sessions; l; l = l->next) {
+	for (l = OPENNAP->sessions, i = 0; l; l = l->next) {
 		session = (OpnSession *) l->data;
 
-		if (session->node->connected)
-			return TRUE;
+		if (session->node->state == OPN_NODE_STATE_CONNECTED)
+			i++;
 	}
 
-	return FALSE;
+	return i;
 }
 
-static BOOL opn_connect(void *udata)
+static BOOL on_connect_timer(void *udata)
 {
 	OpnSession *session;
 	OpnNode *node;
 	List *l;
-
-	if (list_length(OPENNAP->sessions) >= OPN_MAX_CONNECTIONS)
+	
+	if (opn_connection_count() >= OPN_MAX_CONNECTIONS)
 		return TRUE;
 	
 	for (l = OPENNAP->nodelist->nodes; l; l = l->next) {
 		node = (OpnNode *) l->data;
 	
 		/* Check whether we are already connected to that node */
-		if (node->connected)
+		if (node->state != OPN_NODE_STATE_DISCONNECTED)
 			continue;
 
 		if (!(session = opn_session_new()))
@@ -74,16 +78,16 @@ static BOOL opn_connect(void *udata)
 	return TRUE;
 }
 
-void main_timer()
+void opn_connect()
 {
 #ifdef OPENNAP_DEBUG
 	OPN->DBGFN(OPN, "Got %i nodes - connecting...\n",
 	           list_length(OPENNAP->nodelist->nodes));
 #endif
 
-	opn_connect(NULL);
+	on_connect_timer(NULL);
 
-	OPENNAP->timer_connect = timer_add(30 * SECONDS, opn_connect,
+	OPENNAP->timer_connect = timer_add(30 * SECONDS, on_connect_timer,
 	                                   NULL);
 }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: opn_hash.c,v 1.3 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_hash.c,v 1.4 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * This code implements the MD5 message-digest algorithm.
  * The algorithm is due to Ron Rivest.  This code was
@@ -32,7 +32,7 @@ typedef struct {
 /*
  * Note: this code is harmless on little-endian machines.
  */
-void byte_reverse(uint8_t *buf, uint32_t longs)
+static void byte_reverse(uint8_t *buf, uint32_t longs)
 {
 	uint32_t t;
 
@@ -50,7 +50,7 @@ void byte_reverse(uint8_t *buf, uint32_t longs)
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
  * initialization constants.
  */
-void md5_init(MD5Context *ctx)
+static void md5_init(MD5Context *ctx)
 {
 	ctx->buf[0] = 0x67452301;
 	ctx->buf[1] = 0xefcdab89;
@@ -62,7 +62,6 @@ void md5_init(MD5Context *ctx)
 }
 
 /* The four core functions - F1 is optimized somewhat */
-
 #define F1(x, y, z) (z ^ (x & (y ^ z)))
 #define F2(x, y, z) F1(z, x, y)
 #define F3(x, y, z) (x ^ y ^ z)
@@ -77,7 +76,7 @@ void md5_init(MD5Context *ctx)
  * reflect the addition of 16 longwords of new data. MD5Update blocks
  * the data and converts bytes into longwords for this routine.
  */
-void md5_transform(uint32_t buf[4], const uint32_t in[16])
+static void md5_transform(uint32_t buf[4], const uint32_t in[16])
 {
 	register uint32_t a, b, c, d;
 
@@ -164,7 +163,7 @@ void md5_transform(uint32_t buf[4], const uint32_t in[16])
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-void md5_update(MD5Context *ctx, uint8_t const *buf, uint32_t len)
+static void md5_update(MD5Context *ctx, uint8_t const *buf, uint32_t len)
 {
 	uint32_t t;
 
@@ -214,7 +213,7 @@ void md5_update(MD5Context *ctx, uint8_t const *buf, uint32_t len)
  * Final wrapup - pad to 64-byte boundary with the bit pattern 
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
-void md5_final(uint8_t digest[16], MD5Context *ctx)
+static void md5_final(uint8_t digest[16], MD5Context *ctx)
 {
 	unsigned count;
 	uint8_t *p;

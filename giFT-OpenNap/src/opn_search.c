@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_search.c,v 1.18 2003/08/08 14:35:07 tsauerbeck Exp $
+ * $Id: opn_search.c,v 1.19 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -103,17 +103,18 @@ static BOOL file_cmp_query(char *file, char **query)
 	return FALSE;
 }
 
-BOOL opn_search_reply_add(char *file, OpnUrl *url, Share *share)
+uint32_t opn_search_reply_add(char *file, OpnUrl *url, Share *share)
 {
 	OpnSearch *search;
 	List *l;
-	BOOL match[2], added = FALSE;
+	BOOL match[2];
+	uint32_t i;
 
 	assert(file);
 	assert(url);
 	assert(share);
 
-	for (l = OPENNAP->searches; l; l = l->next) {
+	for (l = OPENNAP->searches, i = 0; l; l = l->next) {
 		search = (OpnSearch *) l->data;
 
 		match[0] = file_cmp_query(file, search->query);
@@ -124,12 +125,12 @@ BOOL opn_search_reply_add(char *file, OpnUrl *url, Share *share)
 			                   url->user, NULL, opn_url_serialize(url),
 			                   1, share);
 
-			added = TRUE;
 			timer_reset(search->timer);
+			i++;
 		}
 	}
 
-	return added;
+	return i;
 }
 
 BOOL opennap_search(Protocol *p, IFEvent *event, char *query,
@@ -140,7 +141,7 @@ BOOL opennap_search(Protocol *p, IFEvent *event, char *query,
 	OpnSession *session;
 	List *l;
 
-	if (!opn_is_connected || !(search = opn_search_new()))
+	if (!opn_connection_count() || !(search = opn_search_new()))
 		return FALSE;
 
 	OPENNAP->searches = list_prepend(OPENNAP->searches, search);
@@ -152,7 +153,8 @@ BOOL opennap_search(Protocol *p, IFEvent *event, char *query,
 	for (l = OPENNAP->sessions; l; l = l->next) {
 		session = (OpnSession *) l->data;
 		
-		if (!session->node->connected || !(packet = opn_packet_new()))
+		if (session->node->state != OPN_NODE_STATE_CONNECTED
+		   || !(packet = opn_packet_new()))
 			continue;
 
 		opn_packet_set_cmd(packet, OPN_CMD_SEARCH);

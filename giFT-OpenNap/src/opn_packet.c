@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.c,v 1.12 2003/08/09 09:56:34 tsauerbeck Exp $
+ * $Id: opn_packet.c,v 1.13 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -76,36 +76,26 @@ void opn_packet_set_cmd(OpnPacket *packet, OpnCommand cmd)
 	packet->cmd = cmd;
 }
 
-static void packet_append(OpnPacket *packet, char *str)
-{
-	if (!packet->data->len)
-		string_append(packet->data, str);
-	else
-		string_appendf(packet->data, " %s", str);
-}
-
 void opn_packet_put_str(OpnPacket *packet, char *str, BOOL quoted)
 {
-	char buf[PATH_MAX + 1];
+	char *fmt;
+	BOOL first = (!packet->data->len);
 	
 	assert(packet);
 	assert(str);
 
-	if (quoted) {
-		snprintf(buf, sizeof(buf), "\"%s\"", str);
-		packet_append(packet, buf);
-	} else
-		packet_append(packet, str);
+	fmt = stringf("%s%s", first ? "" : " ", quoted ? "\"%s\"" : "%s");
+	string_appendf(packet->data, fmt, str);
 }
 
 void opn_packet_put_uint32(OpnPacket *packet, uint32_t val)
 {
-	char buf[16];
-	
 	assert(packet);
 
-	snprintf(buf, sizeof(buf), "%u", val);
-	packet_append(packet, buf);
+	if (!packet->data->len)
+		string_appendf(packet->data, "%lu", val);
+	else
+		string_appendf(packet->data, " %lu", val);
 }
 
 void opn_packet_put_ip(OpnPacket *packet, in_addr_t ip)
@@ -118,7 +108,9 @@ char *opn_packet_get_str(OpnPacket *packet, BOOL quoted)
 	char *start, *end;
 	
 	assert(packet);
-	assert(packet->read);
+
+	if (!packet->read)
+		return NULL;
 
 	if (quoted) {
 		/* string is delimited by quotes */
@@ -133,12 +125,19 @@ char *opn_packet_get_str(OpnPacket *packet, BOOL quoted)
 		
 		if (!(end = strchr(start, ' ')))
 			end = strchr(start, 0);
+		/* end = strchr(start, ' '); */
 	}
 
-	packet->read = end;
-	packet->read += (quoted) ? 2 : 1;
+	packet->read = end + (quoted ? 2 : 1);
 	
 	return STRDUP_N(start, end - start);
+	/*packet->read = end;
+	
+	if (end) {
+		packet->read += quoted ? 2 : 1;
+		return STRDUP_N(start, end - start);
+	} else
+		return STRDUP(start);*/
 }
 
 uint32_t opn_packet_get_uint32(OpnPacket *packet)

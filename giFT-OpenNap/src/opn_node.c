@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_node.c,v 1.22 2003/08/09 09:56:34 tsauerbeck Exp $
+ * $Id: opn_node.c,v 1.23 2003/08/10 14:10:28 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -31,6 +31,7 @@ OpnNode *opn_node_new(in_addr_t ip, in_port_t port)
 
 	node->ip = ip;
 	node->port = port;
+	node->state = OPN_NODE_STATE_DISCONNECTED;
 	
 	return node;
 }
@@ -110,7 +111,7 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 		/* so now we got our serverlist... connect! */
 		tcp_close(nodelist->con);
 		nodelist->con = NULL;
-		main_timer();
+		opn_connect();
 	}
 	
 	buf[bytes] = 0;
@@ -190,6 +191,6 @@ void opn_nodelist_load(OpnNodeList *nodelist, BOOL use_napigator)
 	if (use_napigator)
 		nodelist_load_napigator(nodelist);
 	else
-		main_timer();
+		opn_connect();
 }
 

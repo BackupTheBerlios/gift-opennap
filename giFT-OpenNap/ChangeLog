@@ -1,4 +1,8 @@
-$Id: ChangeLog,v 1.27 2003/08/07 20:17:37 tsauerbeck Exp $
+$Id: ChangeLog,v 1.28 2003/08/10 14:10:28 tsauerbeck Exp $
+
+2003-08-10 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_opennap.c: Fixed main connection timer routines
+        * src/opn_hash.c: Don't export MD5 functions
 
 2003-08-07 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c, src/opn_upload.c: Upload fixes
