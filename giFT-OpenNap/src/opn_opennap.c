@@ -71,6 +71,11 @@ static BOOL opn_connect(void *udata)
 
 void main_timer()
 {
+#ifdef OPENNAP_DEBUG
+	OPN->DBGFN(OPN, "Got %i nodes - connecting...\n",
+	           list_length(OPENNAP->nodelist->nodes));
+#endif
+
 	opn_connect(NULL);
 
 	OPENNAP->timer_connect = timer_add(30 * SECONDS, opn_connect,

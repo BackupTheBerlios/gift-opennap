@@ -199,9 +199,10 @@ static void nodelist_load_local(OpnNodeList *nodelist)
 
 void opn_nodelist_load(OpnNodeList *nodelist, BOOL local_mode)
 {
-	if (local_mode)
+	if (local_mode) {
 		nodelist_load_local(nodelist);
-	else
+		main_timer();
+	} else
 		nodelist_load_napigator(nodelist);
 }
 
