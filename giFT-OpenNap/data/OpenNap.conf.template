@@ -1,3 +1,5 @@
+# $Id: OpenNap.conf.template,v 1.2 2003/08/05 07:51:37 tsauerbeck Exp $
+
 [main]
 #
 # Port used for client-to-client communication (file transfers)

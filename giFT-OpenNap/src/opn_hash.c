@@ -1,4 +1,6 @@
 /*
+ * $Id: opn_hash.c,v 1.3 2003/08/05 07:51:37 tsauerbeck Exp $
+ * 
  * This code implements the MD5 message-digest algorithm.
  * The algorithm is due to Ron Rivest.  This code was
  * written by Colin Plumb in 1993, no copyright is claimed.

@@ -1,3 +1,5 @@
+dnl $Id: configure.ac,v 1.5 2003/08/05 07:51:37 tsauerbeck Exp $
+
 AC_INIT(src/opn_opennap.c)
 AM_INIT_AUTOMAKE(giFT-OpenNap, 0.0.1)
 

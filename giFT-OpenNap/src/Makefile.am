@@ -1,3 +1,5 @@
+# $Id: Makefile.am,v 1.6 2003/08/05 07:51:37 tsauerbeck Exp $
+
 AM_CFLAGS = $(GIFT_OPENNAP_CFLAGS)
 
 plugin_LTLIBRARIES = libOpenNap.la

@@ -1,3 +1,5 @@
+$Id: ChangeLog,v 1.26 2003/08/05 07:47:45 tsauerbeck Exp $
+
 2003-08-04 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: gift-setup can now be used to configure
           giFT-OpenNap

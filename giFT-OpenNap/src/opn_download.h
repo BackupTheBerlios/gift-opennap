@@ -1,4 +1,7 @@
 /* giFT OpenNap
+ *
+ * $Id: opn_download.h,v 1.5 2003/08/05 07:51:37 tsauerbeck Exp $
+ * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
  * This program is free software; you can redistribute it and/or modify

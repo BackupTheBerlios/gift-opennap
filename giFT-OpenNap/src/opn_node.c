@@ -1,4 +1,7 @@
 /* giFT OpenNap
+ *
+ * $Id: opn_node.c,v 1.19 2003/08/05 07:51:37 tsauerbeck Exp $
+ * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -189,9 +192,10 @@ static void nodelist_load_local(OpnNodeList *nodelist)
 	}
 
 	while (file_read_line(fp, &buf))
-		if (sscanf(buf, "%15[^:]:%hu", ip, &port) == 2)
-			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip),
-			                                             port));
+		if (buf[0] != '#')
+			if (sscanf(buf, "%15[^:]:%hu", ip, &port) == 2)
+				opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip),
+				                                             port));
 }
 
 void opn_nodelist_load(OpnNodeList *nodelist, BOOL use_napigator)
