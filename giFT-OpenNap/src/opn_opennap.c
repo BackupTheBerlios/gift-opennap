@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.c,v 1.23 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_opennap.c,v 1.24 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -87,8 +87,7 @@ void opn_connect()
 
 	on_connect_timer(NULL);
 
-	OPENNAP->timer_connect = timer_add(30 * SECONDS, on_connect_timer,
-	                                   NULL);
+	OPENNAP->connect_timer = timer_add(MINUTES, on_connect_timer, NULL);
 }
 
 static int opennap_stats(Protocol *p, unsigned long *users,
@@ -166,20 +165,14 @@ static void opennap_destroy(Protocol *p)
 	if (!OPENNAP)
 		return;
 
-	if (OPENNAP->timer_connect)
-		timer_remove(OPENNAP->timer_connect);
-
+	timer_remove(OPENNAP->connect_timer);
 	config_free(OPENNAP->cfg);
-
 	tcp_close(OPENNAP->con);
 
-	if (OPENNAP->searches)
-		opn_searches_free(OPENNAP->searches);
-
-	if (OPENNAP->sessions)
-		opn_sessions_free(OPENNAP->sessions);
-	
+	opn_searches_free(OPENNAP->searches);
+	opn_sessions_free(OPENNAP->sessions);
 	opn_nodelist_free(OPENNAP->nodelist);
+
 	free(OPENNAP);
 }
 

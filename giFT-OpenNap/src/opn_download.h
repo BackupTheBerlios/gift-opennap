@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_download.h,v 1.5 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_download.h,v 1.6 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -25,6 +25,7 @@ typedef struct {
 	OpnUrl *url;
 	TCPC *con;
 	Chunk *chunk;
+	timer_id retry_timer;
 } OpnDownload;
 
 typedef BOOL (*OpnDownloadFindCb)(OpnDownload *dl, void *udata);

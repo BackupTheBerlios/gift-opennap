@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_search.c,v 1.19 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_search.c,v 1.20 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -186,7 +186,8 @@ static int foreach_search_free(OpnSearch *search, void *udata)
 
 void opn_searches_free(List *searches)
 {
-	assert(searches);
+	if (!searches)
+		return;
 
 	list_foreach_remove(searches,
 	                    (ListForeachFunc) foreach_search_free, NULL);

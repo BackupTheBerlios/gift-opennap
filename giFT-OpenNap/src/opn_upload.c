@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_upload.c,v 1.13 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_upload.c,v 1.14 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -39,8 +39,7 @@ void opn_upload_free(OpnUpload *upload)
 	if (!upload)
 		return;
 
-	if (upload->con)
-		tcp_close(upload->con);
+	tcp_close(upload->con);
 
 	if (upload->fp)
 		fclose(upload->fp);
@@ -141,23 +140,17 @@ static void on_upload_read(int fd, input_id input, void *udata)
 	switch (OPN->upload_auth(OPN, net_ip_str(con->host), share, NULL)) {
 		case UPLOAD_AUTH_ALLOW:
 			opn_upload_start(user, share, offset, con);
-			break;
+			return;
 		case UPLOAD_AUTH_NOTSHARED:
 			tcp_writestr(con, OPN_MSG_FILENOTSHARED);
-			tcp_close(con);
 			break;
 		case UPLOAD_AUTH_STALE:
 			tcp_writestr(con, OPN_MSG_INVALIDREQUEST);
-			tcp_close(con);
-		case UPLOAD_AUTH_MAX:
-		case UPLOAD_AUTH_MAX_PERUSER:
-			/* FIXME, maybe
-			 */
-			break;
 		default:
-			tcp_close(con);
 			break;
 	}
+
+	tcp_close(con);
 }
 
 void opn_upload_connect(int fd, input_id input, void *udata)

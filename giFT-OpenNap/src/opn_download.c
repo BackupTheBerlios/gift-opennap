@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_download.c,v 1.17 2003/08/09 09:56:34 tsauerbeck Exp $
+ * $Id: opn_download.c,v 1.18 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -171,10 +171,10 @@ void opn_download_free(OpnDownload *dl)
 
 	OPENNAP->downloads = list_remove(OPENNAP->downloads, dl);
 
-	if (dl->con)
-		tcp_close(dl->con);
-
+	tcp_close(dl->con);
+	timer_remove(dl->retry_timer);
 	opn_url_free(dl->url);
+
 	free(dl);
 }
 

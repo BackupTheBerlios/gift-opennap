@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.h,v 1.15 2003/08/12 11:38:04 tsauerbeck Exp $
+ * $Id: opn_opennap.h,v 1.16 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -50,7 +50,7 @@ typedef struct {
 	List *uploads;
 
 	TCPC *con; /**< connection we're listing on for uploads */
-	timer_id timer_connect;
+	timer_id connect_timer;
 } OpnPlugin;
 
 #ifndef __OPN_OPENNAP_C

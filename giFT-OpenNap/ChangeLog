@@ -1,4 +1,9 @@
-$Id: ChangeLog,v 1.28 2003/08/10 14:10:28 tsauerbeck Exp $
+$Id: ChangeLog,v 1.29 2003/08/12 14:49:03 tsauerbeck Exp $
+
+2003-08-12 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_packet.c, src/opn_session.c:
+          Moved opn_packet_recv() functionality to on_session_read()
+          and switched to FDBuf routines
 
 2003-08-10 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: Fixed main connection timer routines

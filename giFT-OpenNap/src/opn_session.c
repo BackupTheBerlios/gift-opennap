@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_session.c,v 1.16 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_session.c,v 1.17 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -25,11 +25,37 @@
 static void on_session_read(int fd, input_id input, void *udata)
 {
 	OpnSession *session = (OpnSession *) udata;
-	
-	if (!opn_packet_recv(session)) {
+	OpnPacket *packet;
+	FDBuf *buf = tcp_readbuf(session->con);
+	uint16_t len = buf->flag + OPN_PACKET_HEADER_LEN;
+	uint8_t *data;
+	int n;
+
+	if ((n = fdbuf_fill(buf, len)) < 0) {
 		OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
 		opn_session_free(session);
-	}
+		return;
+	} else if (n > 0)
+		return;
+
+	data = fdbuf_data(buf, NULL);
+
+	/* get the payload's length */
+	memcpy(&len, data, 2);
+	len = BSWAP16(len);
+
+	if (buf->flag || !len) {
+		buf->flag = 0;
+		fdbuf_release(buf);
+
+		if ((packet = opn_packet_unserialize(data, len))) {
+			assert(packet->cmd != OPN_CMD_NONE);
+
+			opn_protocol_handle(packet, session);
+			opn_packet_free(packet);
+		}
+	} else if (!buf->flag)
+		buf->flag = len;
 }
 
 static void session_login(OpnSession *session)
@@ -98,8 +124,7 @@ void opn_session_free(OpnSession *session)
 	if (!session)
 		return;
 
-	if (session->con)
-		tcp_close(session->con);
+	tcp_close(session->con);
 
 	if (session->node)
 		session->node->state = OPN_NODE_STATE_DISCONNECTED;
@@ -134,8 +159,9 @@ static int foreach_session_free(OpnSession *session, void *udata)
 
 void opn_sessions_free(List *sessions)
 {
-	assert(sessions);
-	
+	if (!sessions)
+		return;
+
 	list_foreach_remove(sessions,
 	                    (ListForeachFunc) foreach_session_free, NULL);
 }

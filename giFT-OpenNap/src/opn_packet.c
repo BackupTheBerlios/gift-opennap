@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.c,v 1.14 2003/08/12 11:38:04 tsauerbeck Exp $
+ * $Id: opn_packet.c,v 1.15 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -19,19 +19,6 @@
  */
 
 #include "opn_opennap.h"
-
-#ifdef WORDS_BIGENDIAN
-# define BSWAP16(x) (((x) & 0x00ff) << 8 | ((x) & 0xff00) >> 8)
-# define BSWAP32(x) \
-	((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >> 8) | \
-	(((x) & 0x0000ff00) << 8) | (((x) & 0x000000ff) << 24))
-#else /* !WORDS_BIGENDIAN */
-# define BSWAP16(x) (x)
-# define BSWAP32(x) (x)
-#endif /* WORDS_BIGENDIAN */
-
-/* length of the header: sizeof(length) + sizeof(type) */
-#define OPN_PACKET_HEADER_LEN 4
 
 /**
  * Creates a new OpnPacket
@@ -196,7 +183,6 @@ OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size)
 	uint16_t cmd;
 
 	assert(data);
-	assert(size >= OPN_PACKET_HEADER_LEN);
 
 	if (!(packet = opn_packet_new()))
 		return NULL;
@@ -204,7 +190,7 @@ OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size)
 	memcpy(&cmd, &data[2], 2);
 	packet->cmd = BSWAP16(cmd);
 	
-	if ((size -= OPN_PACKET_HEADER_LEN)) {
+	if (size) {
 		string_appendu(packet->data, &data[OPN_PACKET_HEADER_LEN], size);
 		packet->read = packet->data->str;
 	}
@@ -233,42 +219,5 @@ BOOL opn_packet_send(OpnPacket *packet, OpnSession *session)
 	
 	bytes = packet->data->len + OPN_PACKET_HEADER_LEN;
 	return (tcp_write(session->con, data, bytes) == bytes);
-}
-
-/**
- * Reads a packet and handles it.
- * 
- * @param session The session to read the packet from
- * @return TRUE if a packet has been read, else FALSE.
- */
-BOOL opn_packet_recv(OpnSession *session)
-{
-	OpnPacket *packet;
-	uint8_t buf[2048];
-	int bytes;
-	uint16_t len;
-
-	assert(session);
-
-	/* get the length field of the message:
-	 * always in little-endian format
-	 */
-	if (tcp_peek(session->con, (uint8_t *) &len, 2) < 2)
-		return FALSE;
-	
-	len = MIN(BSWAP16(len) + OPN_PACKET_HEADER_LEN, sizeof(buf));
-	bytes = tcp_recv(session->con, buf, len);
-	
-	if (bytes < OPN_PACKET_HEADER_LEN)
-		return FALSE;
-	
-	packet = opn_packet_unserialize(buf, bytes);
-	
-	if (packet->cmd != OPN_CMD_NONE)
-		opn_protocol_handle(packet, session);
-	
-	opn_packet_free(packet);
-
-	return TRUE;
 }
 

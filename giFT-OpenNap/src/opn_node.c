@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_node.c,v 1.23 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_node.c,v 1.24 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -74,10 +74,9 @@ void opn_nodelist_free(OpnNodeList *nodelist)
 	if (!nodelist)
 		return;
 
-	if (nodelist->con)
-		tcp_close(nodelist->con);
-	
+	tcp_close(nodelist->con);
 	nodelist_nodes_remove(nodelist);
+
 	free(nodelist);
 }
 
@@ -147,8 +146,7 @@ static void on_napigator_connect(int fd, input_id input, void *udata)
 
 static void nodelist_load_napigator(OpnNodeList *nodelist)
 {
-	if (nodelist->con)
-		tcp_close(nodelist->con);
+	tcp_close(nodelist->con);
 
 	if (!(nodelist->con = tcp_open(net_ip(OPN_NAPIGATOR_IP), 80,
 	                               FALSE)))

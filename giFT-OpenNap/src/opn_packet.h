@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.h,v 1.8 2003/08/08 14:35:07 tsauerbeck Exp $
+ * $Id: opn_packet.h,v 1.9 2003/08/12 14:49:03 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -31,6 +31,19 @@
  * The <data> portion of the message is a plain ASCII string.
  */
 
+/* length of the header: sizeof(length) + sizeof(type) */
+#define OPN_PACKET_HEADER_LEN 4
+
+#ifdef WORDS_BIGENDIAN
+# define BSWAP16(x) (((x) & 0x00ff) << 8 | ((x) & 0xff00) >> 8)
+# define BSWAP32(x) \
+	((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >> 8) | \
+	(((x) & 0x0000ff00) << 8) | (((x) & 0x000000ff) << 24))
+#else /* !WORDS_BIGENDIAN */
+# define BSWAP16(x) (x)
+# define BSWAP32(x) (x)
+#endif /* WORDS_BIGENDIAN */
+	
 typedef struct _OpnPacket {
 	OpnCommand cmd; /**< command */
 
@@ -57,7 +70,6 @@ in_addr_t opn_packet_get_ip(OpnPacket *packet);
 OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size);
 
 BOOL opn_packet_send(OpnPacket *packet, OpnSession *session);
-BOOL opn_packet_recv(OpnSession *session);
-	
+
 #endif
 
