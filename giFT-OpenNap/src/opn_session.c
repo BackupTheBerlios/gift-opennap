@@ -33,18 +33,20 @@ static void on_session_read(int fd, input_id input, void *udata)
 static void session_login(OpnSession *session)
 {
 	OpnPacket *packet;
-	char buf[128];
 
 	assert(session);
 
-	snprintf(buf, sizeof(buf), "%s none %hu \""
-	         OPENNAP_CLIENTNAME " " VERSION "\" 0",
-	         OPENNAP_ALIAS, OPENNAP_DATAPORT);
-	
-	if (!(packet = opn_packet_new(OPN_CMD_LOGIN))
-	    || !opn_packet_set_data(packet, buf))
+	if (!(packet = opn_packet_new()))
 		return;
 
+	opn_packet_set_cmd(packet, OPN_CMD_LOGIN);
+
+	opn_packet_put_str(packet, OPENNAP_ALIAS, FALSE);
+	opn_packet_put_str(packet, "none", FALSE);
+	opn_packet_put_uint32(packet, OPENNAP_DATAPORT);
+	opn_packet_put_str(packet, OPENNAP_CLIENTNAME " " VERSION, TRUE);
+	opn_packet_put_uint32(packet, 0);
+	
 	opn_packet_send(packet, session->con);
 	opn_packet_free(packet);
 }

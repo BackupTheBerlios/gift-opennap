@@ -52,7 +52,7 @@ void opn_share_refresh(OpnSession *session)
 	Share *share;
 	Hash *hash;
 	List *l;
-	char buf[PATH_MAX + 128], *bitrate, *freq, *len;
+	char *bitrate, *freq, *len;
 
 	assert(session);
 	assert(session->node);
@@ -64,19 +64,23 @@ void opn_share_refresh(OpnSession *session)
 		share = (Share *) l->data;
 		hash = share_get_hash(share, OPENNAP_HASH);
 
-		if (!(packet = opn_packet_new(OPN_CMD_SHARE_ADD)))
+		if (!(packet = opn_packet_new()))
 			continue;
+
+		opn_packet_set_cmd(packet, OPN_CMD_SHARE_ADD);
 
 		bitrate = share_get_meta(share, "Bitrate");
 		freq = share_get_meta(share, "Frequency");
 		len = share_get_meta(share, "Length");
 
-		snprintf(buf, sizeof(buf), "\"%s\" %s %lu %s %s %s",
-				share->path, hash->data, share->size,
-				bitrate ? bitrate : "0", freq ? freq : "0",
-				len ? len : "0");
-
-		opn_packet_set_data(packet, buf);
+		opn_packet_put_str(packet, share->path, TRUE);
+		opn_packet_put_str(packet, hash->data, FALSE);
+		opn_packet_put_uint32(packet, share->size);
+		opn_packet_put_str(packet, bitrate ? bitrate : "0", FALSE);
+		opn_packet_put_str(packet, freq ? freq : "0", FALSE);
+		opn_packet_put_str(packet, bitrate ? freq : "0", FALSE);
+		opn_packet_put_str(packet, len ? len : "0", FALSE);
+		
 		opn_packet_send(packet, session->con);
 		opn_packet_free(packet);
 	}
@@ -98,7 +102,9 @@ void share_remove()
 		if (!session->node->connected)
 			continue;
 
-		if ((packet = opn_packet_new(OPN_CMD_SHARE_REMOVE_ALL))) {
+		if ((packet = opn_packet_new())) {
+
+			opn_packet_set_cmd(packet, OPN_CMD_SHARE_REMOVE_ALL);
 			opn_packet_send(packet, session->con);
 			opn_packet_free(packet);
 		}

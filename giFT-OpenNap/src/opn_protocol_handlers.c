@@ -26,7 +26,7 @@ OPN_HANDLER(login_error)
 	assert(udata);
 
 #ifdef OPENNAP_DEBUG
-	OPN->DBGFN(OPN, "login error: %s\n", data);
+	OPN->DBGFN(OPN, "login error: %s\n", packet->read);
 #endif
 
 	OPENNAP->sessions = list_remove(OPENNAP->sessions, udata);
@@ -50,34 +50,34 @@ OPN_HANDLER(stats)
 	OpnSession *session = (OpnSession *) udata;
 
 	assert(session);
-	memset(&session->stats, 0, sizeof(OpnStats));
 
-	sscanf(data, "%lu %lu %lf",
-	       (unsigned long *) &session->stats.users,
-	       (unsigned long *) &session->stats.files,
-	       &session->stats.size);
+	session->stats.users = opn_packet_get_uint32(packet);
+	session->stats.files = opn_packet_get_uint32(packet);
+	session->stats.size = (double) opn_packet_get_uint32(packet);
 }
 
 OPN_HANDLER(error)
 {
 #ifdef OPENNAP_DEBUG
-	OPN->DBGFN(OPN, "error: %s\n", data);
+	OPN->DBGFN(OPN, "error: %s\n", packet->read);
 #endif
 }
 
 OPN_HANDLER(ping)
 {
 	OpnSession *session = (OpnSession *) udata;
-	OpnPacket *packet;
+	OpnPacket *pong;
 
 	assert(session);
 
-	if (!(packet = opn_packet_new(OPN_CMD_PONG))
-	    || !opn_packet_set_data(packet, data))
+	if (!(pong = opn_packet_new()))
 		return;
 
-	opn_packet_send(packet, session->con);
-	opn_packet_free(packet);
+	opn_packet_set_cmd(pong, OPN_CMD_PONG);
+	opn_packet_put_str(pong, packet->read, FALSE);
+
+	opn_packet_send(pong, session->con);
+	opn_packet_free(pong);
 }
 
 /* temporary, until giFT's function is fixed */
@@ -110,21 +110,19 @@ OPN_HANDLER(search_result)
 	OpnUrl url;
 	OpnSearch *search;
 	Share share;
-	char md5[33], user[64], bitrate[8], frequency[8], length[16];
-	char tmp[PATH_MAX + 1];
-	char *file, *path, *root;
+	char *md5, *user, *bitrate, *freq, *len, *tmp, *file, *path, *root;
 	uint32_t ip, filesize;
-
-	if (!data)
-		return;
 
 	assert(session);
 
-	md5[0] = user[0] = bitrate[0] = frequency[0] = length[0] = 0;
-	tmp[0] = 0;
-
-	sscanf(data, "\"%[^\"]\" %32s %u %s %s %s %63s %u %*[^\n]", tmp, md5,
-	       &filesize, bitrate, frequency, length, user, &ip);
+	tmp = opn_packet_get_str(packet, TRUE);
+	md5 = opn_packet_get_str(packet, FALSE);
+	filesize = opn_packet_get_uint32(packet);
+	bitrate = opn_packet_get_str(packet, FALSE);
+	freq = opn_packet_get_str(packet, FALSE);
+	len = opn_packet_get_str(packet, FALSE);
+	user = opn_packet_get_str(packet, FALSE);
+	ip = opn_packet_get_ip(packet);
 
 	if (!user)
 		return;
@@ -146,8 +144,8 @@ OPN_HANDLER(search_result)
 	share_set_root(&share, root, strlen(root));
 	share.size = filesize;
 	share_set_meta(&share, "Bitrate", bitrate);
-	share_set_meta(&share, "Frequency", frequency);
-	share_set_meta(&share, "Length", length);
+	share_set_meta(&share, "Frequency", freq);
+	share_set_meta(&share, "Length", len);
 
 	opn_url_set_file(&url, file, filesize);
 	opn_url_set_client(&url, user, ip, 0);
@@ -158,6 +156,13 @@ OPN_HANDLER(search_result)
 	                   1, &share);
 
 	share_finish(&share);
+
+	free(tmp);
+	free(md5);
+	free(bitrate);
+	free(freq);
+	free(len);
+	free(user);
 
 	timer_reset(search->timer);
 }
@@ -182,15 +187,20 @@ OPN_HANDLER(download_ack)
 {
 	OpnDownload *download;
 	OpnUrl url;
-	char user[64], file[PATH_MAX + 1];
+	char *user, *file;
 	in_addr_t ip;
 	in_port_t port;
 	
-	sscanf(data, "%63s %u %hu \"%[^\n]\"",
-	       user, &ip, &port, file);
+	user = opn_packet_get_str(packet, FALSE);
+	ip = opn_packet_get_ip(packet);
+	port = opn_packet_get_uint32(packet);
+	file = opn_packet_get_str(packet, TRUE);
 
 	opn_url_set_file(&url, file, 0);
 	opn_url_set_client(&url, user, ip, port);
+
+	free(user);
+	free(file);
 
 	/* if port is 0 => user is firewalled
 	 * currently not supported

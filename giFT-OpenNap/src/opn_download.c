@@ -24,7 +24,6 @@ BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 	OpnDownload *download;
 	OpnSession *session;
 	OpnPacket *packet;
-	char buf[PATH_MAX + 128];
 	BOOL ret;
 
 	if (!(download = opn_download_new()))
@@ -40,13 +39,14 @@ BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 
 	OPENNAP->downloads = list_prepend(OPENNAP->downloads, download);
 	
-	snprintf(buf, sizeof(buf), "%s \"%s\"", download->url->user,
-	         download->url->file);
-
-	if (!(packet = opn_packet_new(OPN_CMD_DOWNLOAD_REQUEST))
-	    || !opn_packet_set_data(packet, buf))
+	if (!(packet = opn_packet_new()))
 		return FALSE;
+
+	opn_packet_set_cmd(packet, OPN_CMD_DOWNLOAD_REQUEST);
 	
+	opn_packet_put_str(packet, download->url->user, FALSE);
+	opn_packet_put_str(packet, download->url->file, TRUE);
+
 	ret = opn_packet_send(packet, session->con);
 	opn_packet_free(packet);
 	

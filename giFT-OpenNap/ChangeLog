@@ -1,3 +1,7 @@
+2003-06-21 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_packet.[ch]: Removed opn_packet_set_data(),
+          added opn_packet_put_str(), ...get_str() etc
+
 2003-06-20 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_hash.[ch]: Added hashing functions
         * src/opn_share.[ch]: Added sharing capabilities

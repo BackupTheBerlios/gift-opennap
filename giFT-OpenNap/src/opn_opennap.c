@@ -71,6 +71,8 @@ static BOOL opn_connect(void *udata)
 
 void main_timer()
 {
+	opn_connect(NULL);
+
 	OPENNAP->timer_connect = timer_add(30 * SECONDS, opn_connect,
 	                                   NULL);
 }

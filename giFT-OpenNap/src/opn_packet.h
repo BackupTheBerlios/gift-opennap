@@ -28,22 +28,29 @@
  * The <data> portion of the message is a plain ASCII string.
  */
 
-/* length of the header: sizeof(length) + sizeof(type) */
-#define OPN_PACKET_HEADER_LEN 4 
-
 typedef struct _OpnPacket {
 	OpnCommand cmd; /**< command */
-	
-	char *data; /**< payload */
-	uint16_t data_size; /**< payload's size */
+
+	String *data; /**< payload of the OpnPacket */
 	
 	uint8_t *serialized; /**< serialized data */
+
+	char *read;
 } OpnPacket;
 
-OpnPacket *opn_packet_new(OpnCommand cmd);
+OpnPacket *opn_packet_new();
 void opn_packet_free(OpnPacket *packet);
 
-BOOL opn_packet_set_data(OpnPacket *packet, char *data);
+void opn_packet_set_cmd(OpnPacket *packet, OpnCommand cmd);
+
+void opn_packet_put_str(OpnPacket *packet, char *str, BOOL quoted);
+void opn_packet_put_uint32(OpnPacket *packet, uint32_t val);
+void opn_packet_put_ip(OpnPacket *packet, in_addr_t ip);
+
+char *opn_packet_get_str(OpnPacket *packet, BOOL quoted);
+uint32_t opn_packet_get_uint32(OpnPacket *packet);
+in_addr_t opn_packet_get_ip(OpnPacket *packet);
+
 OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size);
 
 BOOL opn_packet_send(OpnPacket *packet, TCPC *con);

@@ -136,8 +136,10 @@ static BOOL file_cmp_query(char *file, char **query)
 {
 	char **ptr;
 
-	assert(query);
 	assert(file);
+
+	if (!query)
+		return FALSE;
 
 	for (ptr = query; *ptr; ptr++)
 		if (strcasestr(file, *ptr))
@@ -175,7 +177,6 @@ BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 	OpnPacket *packet;
 	OpnSession *session;
 	List *l;
-	char buf[256];
 
 	if (!opn_is_connected || !(search = opn_search_new()))
 		return FALSE;
@@ -192,13 +193,15 @@ BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 		if (!session->node->connected)
 			continue;
 
-		snprintf(buf, sizeof(buf),
-		         "MAX_RESULTS %i FILENAME CONTAINS \"%s\"",
-		         OPN_MAX_SEARCH_RESULTS, query);
-
-		if (!(packet = opn_packet_new(OPN_CMD_SEARCH))
-		    || !opn_packet_set_data(packet, buf))
+		if (!(packet = opn_packet_new()))
 			continue;
+
+		opn_packet_set_cmd(packet, OPN_CMD_SEARCH);
+		
+		opn_packet_put_str(packet, "MAX_RESULTS", FALSE);
+		opn_packet_put_uint32(packet, OPN_MAX_SEARCH_RESULTS);
+		opn_packet_put_str(packet, "FILENAME CONTAINS", FALSE);
+		opn_packet_put_str(packet, query, TRUE);
 
 		opn_packet_send(packet, session->con);
 		opn_packet_free(packet);

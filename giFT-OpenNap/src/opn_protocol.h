@@ -50,7 +50,7 @@ typedef enum {
 } OpnCommand;
 
 #define OPN_HANDLER_FUNC(func) opn_proto_handle_##func
-#define OPN_HANDLER_PARAMS char *data, void *udata
+#define OPN_HANDLER_PARAMS struct _OpnPacket *packet, void *udata
 #define OPN_HANDLER(func) void OPN_HANDLER_FUNC(func)(OPN_HANDLER_PARAMS)
 
 typedef void (*HandlerFn)(OPN_HANDLER_PARAMS);

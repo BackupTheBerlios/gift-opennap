@@ -53,9 +53,10 @@ static void init_handlers()
 BOOL opn_protocol_handle(OpnPacket *packet, void *udata)
 {
 	static BOOL initialized = FALSE;
+
+	assert(packet);
 	
-	if (!packet || packet->cmd < OPN_CMD_NONE ||
-	    packet->cmd > OPN_CMD_NUM)
+	if (packet->cmd < OPN_CMD_NONE || packet->cmd > OPN_CMD_NUM)
 		return FALSE;
 
 	if (!initialized) {
@@ -64,7 +65,7 @@ BOOL opn_protocol_handle(OpnPacket *packet, void *udata)
 	}
 	
 	if (handlers[packet->cmd])
-		(*handlers[packet->cmd])(packet->data, udata);
+		(*handlers[packet->cmd])(packet, udata);
 	
 	return TRUE;
 }
