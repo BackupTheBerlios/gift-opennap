@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_share.c,v 1.8 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_share.c,v 1.9 2003/08/08 14:35:07 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -84,7 +84,7 @@ void opn_share_refresh(OpnSession *session)
 		opn_packet_put_str(packet, bitrate ? freq : "0", FALSE);
 		opn_packet_put_str(packet, len ? len : "0", FALSE);
 		
-		opn_packet_send(packet, session->con);
+		opn_packet_send(packet, session);
 		opn_packet_free(packet);
 	}
 }
@@ -107,7 +107,7 @@ void share_remove()
 
 		if ((packet = opn_packet_new())) {
 			opn_packet_set_cmd(packet, OPN_CMD_SHARE_REMOVE_ALL);
-			opn_packet_send(packet, session->con);
+			opn_packet_send(packet, session);
 			opn_packet_free(packet);
 		}
 	}

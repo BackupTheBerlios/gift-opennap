@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol_handlers.c,v 1.18 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_protocol_handlers.c,v 1.19 2003/08/08 14:35:07 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -32,7 +32,7 @@ OPN_HANDLER(login_error)
 #endif
 
 	OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
-	opn_session_free((OpnSession *) session);
+	opn_session_free(session);
 }
 
 OPN_HANDLER(login_ack)
@@ -67,7 +67,7 @@ OPN_HANDLER(ping)
 	opn_packet_set_cmd(pong, OPN_CMD_PONG);
 	opn_packet_put_str(pong, packet->read, FALSE);
 
-	opn_packet_send(pong, session->con);
+	opn_packet_send(pong, session);
 	opn_packet_free(pong);
 }
 
@@ -210,7 +210,7 @@ OPN_HANDLER(upload_request)
 	opn_packet_put_str(answer, user, FALSE);
 	opn_packet_put_str(answer, file, TRUE);
 
-	opn_packet_send(answer, session->con);
+	opn_packet_send(answer, session);
 	opn_packet_free(answer);
 	
 	free(user);

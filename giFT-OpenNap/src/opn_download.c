@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_download.c,v 1.15 2003/08/08 11:01:41 tsauerbeck Exp $
+ * $Id: opn_download.c,v 1.16 2003/08/08 14:35:07 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -92,20 +92,18 @@ BOOL opennap_download_start(Protocol *p, Transfer *transfer,
 	download->chunk = chunk;
 	download->url = opn_url_unserialize(source->url);
 
-	if (!(session = opn_session_find(download->url))) {
+	if (!(session = opn_session_find(download->url))
+	   || !(packet = opn_packet_new())) {
 		opn_download_free(download);
 		return FALSE;
 	}
 	
-	if (!(packet = opn_packet_new()))
-		return FALSE;
-
 	opn_packet_set_cmd(packet, OPN_CMD_DOWNLOAD_REQUEST);
 	
 	opn_packet_put_str(packet, download->url->user, FALSE);
 	opn_packet_put_str(packet, download->url->file, TRUE);
 
-	ret = opn_packet_send(packet, session->con);
+	ret = opn_packet_send(packet, session);
 	opn_packet_free(packet);
 	
 	return ret;

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.c,v 1.10 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_packet.c,v 1.11 2003/08/08 14:35:07 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -223,23 +223,23 @@ OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size)
  * Sends a OpnPacket using a TCPC
  * 
  * @param packet The packet to send
- * @param con The connection the packet is sent over
+ * @param session The session the packet is sent over
  * @return TRUE on success, FALSE on failure
  */
-BOOL opn_packet_send(OpnPacket *packet, TCPC *con)
+BOOL opn_packet_send(OpnPacket *packet, OpnSession *session)
 {
 	uint8_t *data;
 	int bytes;
 
 	assert(packet);
 	assert(packet->cmd != OPN_CMD_NONE);
-	assert(con);
+	assert(session);
 	
 	if (!(data = packet_serialize(packet)))
 		return FALSE;
 	
 	bytes = packet->data->len + OPN_PACKET_HEADER_LEN;
-	return (tcp_send(con, data, bytes) == bytes);
+	return (tcp_send(session->con, data, bytes) == bytes);
 }
 
 /**

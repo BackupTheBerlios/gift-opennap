@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_search.c,v 1.17 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_search.c,v 1.18 2003/08/08 14:35:07 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -162,7 +162,7 @@ BOOL opennap_search(Protocol *p, IFEvent *event, char *query,
 		opn_packet_put_str(packet, "FILENAME CONTAINS", FALSE);
 		opn_packet_put_str(packet, query, TRUE);
 
-		opn_packet_send(packet, session->con);
+		opn_packet_send(packet, session);
 		opn_packet_free(packet);
 
 		opn_search_ref(search);

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.h,v 1.7 2003/08/07 20:17:37 tsauerbeck Exp $
+ * $Id: opn_packet.h,v 1.8 2003/08/08 14:35:07 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -56,7 +56,7 @@ in_addr_t opn_packet_get_ip(OpnPacket *packet);
 
 OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size);
 
-BOOL opn_packet_send(OpnPacket *packet, TCPC *con);
+BOOL opn_packet_send(OpnPacket *packet, OpnSession *session);
 BOOL opn_packet_recv(OpnSession *session);
 	
 #endif

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_url.c,v 1.9 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_url.c,v 1.10 2003/08/08 14:35:07 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -81,7 +81,7 @@ OpnUrl *opn_url_unserialize(char *data)
 	if (!(url = opn_url_new()))
 		return NULL;
 
-	sscanf(data, "OpenNap://%*u:%hu@%*u:%hu",
+	sscanf(data, "OpenNap://%*[^:]:%hu@%*[^:]:%hu",
 	       &url->client.port, &url->server.port);
 
 	/* get the client's ip */
