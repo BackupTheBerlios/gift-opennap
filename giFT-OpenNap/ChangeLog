@@ -1,4 +1,9 @@
-$Id: ChangeLog,v 1.32 2003/08/15 13:11:58 tsauerbeck Exp $
+$Id: ChangeLog,v 1.33 2003/08/21 19:00:44 tsauerbeck Exp $
+
+2003-08-21 Tilman Sauerbeck <tilman@code-monkey.de>
+        * data/OpenNap.conf.template, src/opn_opennap.h,
+          src/opn_session.c: Password used when connecting
+          can be specified in the config file now
 
 2003-08-15 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: Tell giFT about our version using

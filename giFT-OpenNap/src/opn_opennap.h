@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.h,v 1.17 2003/08/14 20:19:51 tsauerbeck Exp $
+ * $Id: opn_opennap.h,v 1.18 2003/08/21 19:00:44 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -64,8 +64,11 @@ extern Protocol *OPN;
 	config_get_int(OPENNAP->cfg, "main/random_alias=1")
 
 #define OPN_ALIAS \
-	config_get_str(OPENNAP->cfg, "main/alias")
-	
+	config_get_str(OPENNAP->cfg, "main/alias=foobar")
+
+#define OPN_PASSWORD \
+	config_get_str(OPENNAP->cfg, "main/password=foobar")
+
 #define OPN_DATAPORT \
 	config_get_int(OPENNAP->cfg, "main/dataport=6699")
 	

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_session.c,v 1.19 2003/08/14 20:57:02 tsauerbeck Exp $
+ * $Id: opn_session.c,v 1.20 2003/08/21 19:00:44 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -76,7 +76,7 @@ static void session_login(OpnSession *session)
 	opn_packet_set_cmd(packet, OPN_CMD_LOGIN);
 
 	opn_packet_put_str(packet, OPN_ALIAS, FALSE);
-	opn_packet_put_str(packet, "none", FALSE);
+	opn_packet_put_str(packet, OPN_PASSWORD, FALSE);
 	opn_packet_put_uint32(packet, OPN_DATAPORT);
 	opn_packet_put_str(packet, OPN_CLIENTNAME " " VERSION, TRUE);
 	opn_packet_put_uint32(packet, 0);

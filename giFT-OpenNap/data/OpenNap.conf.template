@@ -1,4 +1,4 @@
-# $Id: OpenNap.conf.template,v 1.2 2003/08/05 07:51:37 tsauerbeck Exp $
+# $Id: OpenNap.conf.template,v 1.3 2003/08/21 19:00:44 tsauerbeck Exp $
 
 [main]
 #
@@ -20,6 +20,13 @@ random_alias = 1
 # Alias to use for OpenNap. Has no effect if random_alias is set to 1
 #
 alias = "FooBar"
+
+#
+# The password belonging to your account. Most servers will let you
+# connect even if you give non-existant account data, so it's okay
+# to put a stupid default value here.
+#
+password = "FooBar"
 
 #
 # If set to 1, giFT-OpenNap will connect to servers listed by Napigator
