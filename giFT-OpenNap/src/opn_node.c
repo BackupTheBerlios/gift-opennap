@@ -108,7 +108,7 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 		return;
 	}
 	
-	memset(&buf, 0, sizeof(buf));
+	memset(buf, 0, sizeof(buf));
 
 	if ((bytes = tcp_recv(nodelist->con, buf, sizeof(buf) - 1)) <= 0) {
 		/* so now we got our serverlist... connect! */

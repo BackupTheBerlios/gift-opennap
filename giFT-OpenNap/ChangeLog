@@ -1,5 +1,8 @@
 2003-06-26 Tilman Sauerbeck <tilman@code-monkey.de>
-        * Servers for local mode are now specified in ~/.giFT/OpenNap/nodelist
+        * Servers for local mode are now specified in
+          ~/.giFT/OpenNap/nodelist
+        * src/opn_node.c: Fixed a bug which caused segfaults when
+          trying to get a serverlist from Napigator
 
 2003-06-23 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_url.c: IPs are saved in dotted notation now
