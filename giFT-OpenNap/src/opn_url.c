@@ -32,6 +32,12 @@ OpnUrl *opn_url_new()
 
 void opn_url_free(OpnUrl *url)
 {
+	if (!url)
+		return;
+
+	free(url->user);
+	free(url->file);
+	free(url->serialized);
 	free(url);
 }
 
@@ -42,7 +48,7 @@ void opn_url_set_client(OpnUrl *url, char *user, in_addr_t ip,
 
 	url->client.ip = ip;
 	url->client.port = port;
-	snprintf(url->user, sizeof(url->user), user);
+	url->user = STRDUP(user);
 }
 
 void opn_url_set_server(OpnUrl *url, in_addr_t ip, in_port_t port)
@@ -58,7 +64,7 @@ void opn_url_set_file(OpnUrl *url, char *file, uint32_t size)
 	assert(url);
 
 	url->size = size;
-	snprintf(url->file, sizeof(url->file), file);
+	url->file = STRDUP(file);
 }
 
 /* stolen from OpenFT ;) */
@@ -153,7 +159,8 @@ static char *url_encode(char *decoded)
 				case ')':
 				case '[':
 				case ']':
-					case '\"':
+				case '\"':
+				case '\\':
 				case '\'':
 						ptr = url_encode_char(ptr, *decoded);
 						break;
@@ -173,7 +180,7 @@ static char *url_encode(char *decoded)
 OpnUrl *opn_url_unserialize(char *data)
 {
 	OpnUrl *url;
-	char *ptr, *ptr2, *foo, bar[PATH_MAX + 1];
+	char *ptr, *ptr2, buf[PATH_MAX + 1];
 
 	assert(data);
 
@@ -189,21 +196,17 @@ OpnUrl *opn_url_unserialize(char *data)
 	ptr += 5;
 	ptr2++;
 
-	snprintf(bar, MIN(ptr2 - ptr, sizeof(bar)), ptr);
-	foo = url_decode(bar);
-	snprintf(url->user, sizeof(url->user), foo);
-	free(foo);
+	snprintf(buf, MIN(ptr2 - ptr, sizeof(buf)), "%s", ptr);
+	url->user = url_decode(buf);
 	
 	url->size = strtoul(ptr2 + 5, NULL, 10);
 
-	assert((ptr = strstr(data, "&file=") + 6));
+	assert((ptr = strstr(data, "&file=")));
 	ptr += 6;
-
-	snprintf(bar, sizeof(bar), ptr);
-	foo = url_decode(bar);
-	snprintf(url->file, sizeof(url->file), foo);
-	free(foo);
-
+	
+	snprintf(buf, sizeof(buf), "%s", ptr);
+	url->file = url_decode(buf);
+	
 	return url;
 }
 
@@ -216,11 +219,11 @@ char *opn_url_serialize(OpnUrl *url)
 	user = url_encode(url->user);
 	file = url_encode(url->file);
 
-	snprintf(url->serialized, sizeof(url->serialized),
-			"OpenNap://%u:%hu@%u:%hu?user=%s&size=%u&file=%s",
-			url->client.ip, url->client.port,
-			url->server.ip, url->server.port,
-			user, url->size, file);
+	url->serialized = stringf_dup("OpenNap://%u:%hu@%u:%hu?user=%s"
+	                              "&size=%u&file=%s",
+	                              url->client.ip, url->client.port,
+	                              url->server.ip, url->server.port,
+	                              user, url->size, file);
 
 	free(user);
 	free(file);

@@ -29,11 +29,11 @@ typedef struct {
 		in_port_t port;
 	} server;
 
-	char user[64];
-	char file[PATH_MAX + 1];
+	char *user;
+	char *file;
 	uint32_t size;
 
-	char serialized[(PATH_MAX * 3) + 256];
+	char *serialized;
 } OpnUrl;
 
 OpnUrl *opn_url_new();

@@ -106,7 +106,9 @@ static Config *config_load()
 	src = gift_conf_path("OpenNap/OpenNap.conf");
 
 	if (!(cfg = gift_config_new("OpenNap"))) {
-		snprintf(dst, sizeof(dst), DATADIR "/OpenNap/OpenNap.conf");
+		snprintf(dst, sizeof(dst), "%s",
+		         DATADIR "/OpenNap/OpenNap.conf");
+
 		file_cp(src, dst);
 
 		cfg = gift_config_new("OpenNap");
@@ -205,7 +207,7 @@ static void gift_cb_destroy(Protocol *p)
 static void setup_callbacks(Protocol *p)
 {
 	p->hash_handler(p, OPENNAP_HASH, HASH_PRIMARY,
-	                (HashFn) opn_hash, (HashDspFn) strdup);
+	                (HashFn) opn_hash, (HashDspFn) STRDUP);
 	
 	p->start = gift_cb_start;
 	p->destroy = gift_cb_destroy;
