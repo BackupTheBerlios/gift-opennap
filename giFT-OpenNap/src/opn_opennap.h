@@ -57,23 +57,26 @@ extern Protocol *OPN;
 #define OPENNAP ((OpnPlugin *) OPN->udata)
 
 /* shortcuts for OPENNAP->cfg */
-#define OPENNAP_RANDOM_USERNAME \
+#define OPN_RANDOM_USERNAME \
 	config_get_int(OPENNAP->cfg, "main/random_alias=1")
 
-#define OPENNAP_ALIAS \
+#define OPN_ALIAS \
 	config_get_str(OPENNAP->cfg, "main/alias")
 	
-#define OPENNAP_DATAPORT \
+#define OPN_DATAPORT \
 	config_get_int(OPENNAP->cfg, "main/dataport=6699")
 	
-#define OPENNAP_MAX_CONNECTIONS \
+#define OPN_MAX_CONNECTIONS \
 	config_get_int(OPENNAP->cfg, "main/max_connections=15")
 
-#define OPENNAP_LOCAL_MODE \
+#define OPN_LOCAL_MODE \
 	config_get_int(OPENNAP->cfg, "main/local_mode=0")
 
-#define OPENNAP_CLIENTNAME "giFT-OpenNap"
-#define OPENNAP_HASH "OPN_MD5"
+#define OPN_CLIENTNAME "giFT-OpenNap"
+#define OPN_HASH "OPN_MD5"
+
+#define OPN_MSG_FILENOTSHARED "FILE NOT SHARED"
+#define OPN_MSG_INVALIDREQUEST "INVALID REQUEST"
 
 /* Called by giFT to init plugin */
 #ifdef WIN32

@@ -137,9 +137,27 @@ static void on_upload_read(int fd, input_id input, void *udata)
 		return;
 	}
 
-	if (OPN->upload_auth(OPN, net_ip_str(con->host),
-	    share, NULL) == UPLOAD_AUTH_ALLOW)
-		opn_upload_start(user, share, offset, con);
+	switch (OPN->upload_auth(OPN, net_ip_str(con->host), share, NULL)) {
+		case UPLOAD_AUTH_ALLOW:
+			opn_upload_start(user, share, offset, con);
+			break;
+		case UPLOAD_AUTH_NOTSHARED:
+			tcp_send(con, OPN_MSG_FILENOTSHARED,
+			         strlen(OPN_MSG_FILENOTSHARED));
+			tcp_close(con);
+			break;
+		case UPLOAD_AUTH_STALE:
+			tcp_send(con, OPN_MSG_INVALIDREQUEST,
+			         strlen(OPN_MSG_INVALIDREQUEST));
+			tcp_close(con);
+		case UPLOAD_AUTH_MAX:
+		case UPLOAD_AUTH_MAX_PERUSER:
+			/* ... */
+			break;
+		default:
+			tcp_close(con);
+			break;
+	}
 }
 
 void opn_upload_connect(int fd, input_id input, void *udata)

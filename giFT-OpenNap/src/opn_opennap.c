@@ -47,7 +47,7 @@ static BOOL opn_connect(void *udata)
 	OpnNode *node;
 	List *l;
 
-	if (list_length(OPENNAP->sessions) >= OPENNAP_MAX_CONNECTIONS)
+	if (list_length(OPENNAP->sessions) >= OPN_MAX_CONNECTIONS)
 		return TRUE;
 	
 	for (l = OPENNAP->nodelist->nodes; l; l = l->next) {
@@ -155,21 +155,19 @@ static BOOL opennap_start(Protocol *p)
 		return FALSE;
 	}
 
-#if 0
-	if (!(OPENNAP->con = tcp_bind(OPENNAP_DATAPORT, FALSE)))
+	if (!(OPENNAP->con = tcp_bind(OPN_DATAPORT, FALSE)))
 		return FALSE;
 	
 	input_add(OPENNAP->con->fd, NULL, INPUT_READ, opn_upload_connect,
 	          TIMEOUT_DEF);
-#endif
 
-	if (OPENNAP_RANDOM_USERNAME) {
+	if (OPN_RANDOM_USERNAME) {
 		set_username(alias);
 		config_set_str(OPENNAP->cfg, "main/alias", alias);
 	}
 
 	OPENNAP->nodelist = opn_nodelist_new();
-	opn_nodelist_load(OPENNAP->nodelist, OPENNAP_LOCAL_MODE);
+	opn_nodelist_load(OPENNAP->nodelist, OPN_LOCAL_MODE);
 
 	return TRUE;
 }
@@ -184,9 +182,7 @@ static void opennap_destroy(Protocol *p)
 
 	config_free(OPENNAP->cfg);
 
-#if 0
 	tcp_close(OPENNAP->con);
-#endif
 
 	if (OPENNAP->searches)
 		opn_searches_free(OPENNAP->searches);
@@ -200,7 +196,7 @@ static void opennap_destroy(Protocol *p)
 
 static void setup_callbacks(Protocol *p)
 {
-	p->hash_handler(p, OPENNAP_HASH, HASH_PRIMARY,
+	p->hash_handler(p, OPN_HASH, HASH_PRIMARY,
 	                (HashFn) opn_hash, (HashDspFn) STRDUP);
 	
 	p->start = opennap_start;

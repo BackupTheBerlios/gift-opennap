@@ -135,7 +135,7 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 static void on_napigator_connect(int fd, input_id input, void *udata)
 {
 	OpnNodeList *nodelist = (OpnNodeList *) udata;
-	char buf[] = "GET /servers.php?version=107&client=" OPENNAP_CLIENTNAME " HTTP/1.0\n\n";
+	char buf[] = "GET /servers.php?version=107&client=" OPN_CLIENTNAME " HTTP/1.0\n\n";
 
 	if (net_sock_error(fd)) {
 		tcp_close(nodelist->con);
@@ -160,10 +160,6 @@ static void on_napigator_connect(int fd, input_id input, void *udata)
 static void nodelist_load_napigator(OpnNodeList *nodelist)
 {
 	assert(nodelist);
-
-	/* only query napigator if we aren't running in local mode */
-	if (OPENNAP_LOCAL_MODE)
-		return;
 
 	if (nodelist->con)
 		tcp_close(nodelist->con);
@@ -203,6 +199,4 @@ void opn_nodelist_load(OpnNodeList *nodelist, BOOL local_mode)
 	} else
 		nodelist_load_napigator(nodelist);
 }
-
-
 

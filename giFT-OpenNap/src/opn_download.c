@@ -15,8 +15,8 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <ctype.h>
 #include "opn_opennap.h"
+#include <ctype.h>
 #include "opn_download.h"
 
 static BOOL find_by_chunk(OpnDownload *dl, void *udata)
@@ -257,7 +257,7 @@ static void on_download_write(int fd, input_id input, void *udata)
 	tcp_send(download->con, "GET", 3);
 
 	snprintf(buf, sizeof(buf), "%s \"%s\" %lu",
-	         OPENNAP_ALIAS, download->url->file,
+	         OPN_ALIAS, download->url->file,
 	         download->chunk->start + download->chunk->transmit);
 
 	tcp_send(download->con, buf, strlen(buf));

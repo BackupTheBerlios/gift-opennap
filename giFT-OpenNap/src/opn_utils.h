@@ -15,7 +15,8 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "opn_opennap.h"
+#ifndef __OPN_UTILS_H
+#define __OPN_UTILS_H
 
 char *opn_unix_path(char *path);
 
@@ -24,4 +25,6 @@ void opn_string_freev(char **str);
 
 char *opn_url_encode(char *decoded);
 char *opn_url_decode(char *encoded);
+
+#endif
 

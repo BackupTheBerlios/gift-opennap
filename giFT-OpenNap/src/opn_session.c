@@ -41,10 +41,10 @@ static void session_login(OpnSession *session)
 
 	opn_packet_set_cmd(packet, OPN_CMD_LOGIN);
 
-	opn_packet_put_str(packet, OPENNAP_ALIAS, FALSE);
+	opn_packet_put_str(packet, OPN_ALIAS, FALSE);
 	opn_packet_put_str(packet, "none", FALSE);
-	opn_packet_put_uint32(packet, OPENNAP_DATAPORT);
-	opn_packet_put_str(packet, OPENNAP_CLIENTNAME " " VERSION, TRUE);
+	opn_packet_put_uint32(packet, OPN_DATAPORT);
+	opn_packet_put_str(packet, OPN_CLIENTNAME " " VERSION, TRUE);
 	opn_packet_put_uint32(packet, 0);
 	
 	opn_packet_send(packet, session->con);

@@ -62,7 +62,7 @@ void opn_share_refresh(OpnSession *session)
 
 	for (l = OPENNAP->shares; l; l = l->next) {
 		share = (Share *) l->data;
-		hash = share_get_hash(share, OPENNAP_HASH);
+		hash = share_get_hash(share, OPN_HASH);
 
 		if (!(packet = opn_packet_new()))
 			continue;
