@@ -38,7 +38,7 @@ uint32_t opn_search_unref(OpnSearch *search);
 void opn_search_free(OpnSearch *search);
 void opn_searches_free(List *searches);
 
-OpnSearch *opn_search_find(char *query);
+BOOL opn_search_reply_add(char *file, OpnUrl *url, Share *share);
 
 BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
                     char *realm, Dataset *meta);

@@ -16,6 +16,7 @@
  */
 
 #include "opn_opennap.h"
+#include <libgift/proto/share.h>
 #include "opn_search.h"
 
 #define OPN_MAX_SEARCH_RESULTS 512
@@ -148,26 +149,33 @@ static BOOL file_cmp_query(char *file, char **query)
 	return FALSE;
 }
 
-/* Returns the OpnSearch object that belongs to a file
- * @param file
- * @return The OpnSearch object, if found, else NULL
- */
-OpnSearch *opn_search_find(char *file)
+BOOL opn_search_reply_add(char *file, OpnUrl *url, Share *share)
 {
 	OpnSearch *search;
 	List *l;
+	BOOL match[2], added = FALSE;
 
 	assert(file);
+	assert(url);
+	assert(share);
 
 	for (l = OPENNAP->searches; l; l = l->next) {
 		search = (OpnSearch *) l->data;
 
-		if (file_cmp_query(file, search->query)
-		    && !file_cmp_query(file, search->exclude))
-			return search;
+		match[0] = file_cmp_query(file, search->query);
+		match[1] = file_cmp_query(file, search->exclude);
+		
+		if (match[0] && !match[1]) {
+			OPN->search_result(OPN, search->event,
+			                   url->user, NULL, opn_url_serialize(url),
+			                   1, share);
+
+			added = TRUE;
+			timer_reset(search->timer);
+		}
 	}
 
-	return NULL;
+	return added;
 }
 
 BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,

@@ -108,7 +108,6 @@ OPN_HANDLER(search_result)
 {
 	OpnSession *session = (OpnSession *) udata;
 	OpnUrl *url;
-	OpnSearch *search;
 	Share share;
 	char *md5, *user, *bitrate, *freq, *len, *root;
 	char *path_orig, *path_nix;
@@ -134,14 +133,6 @@ OPN_HANDLER(search_result)
 	path_nix = my_file_unix_path(path_orig);
 	root = file_dirname(path_nix);
 
-	/* now find the search this searchresult might belong to
-	 * .oO(stupid napster)
-	 */
-	if (!(search = opn_search_find(path_nix)))
-		return;
-	
-	assert(search->event);
-
 	share_init(&share, path_nix);
 	share_set_root(&share, root, strlen(root));
 	share.size = filesize;
@@ -152,11 +143,9 @@ OPN_HANDLER(search_result)
 	opn_url_set_file(url, path_orig, filesize);
 	opn_url_set_client(url, user, ip, 0);
 	opn_url_set_server(url, session->node->ip, session->node->port);
-	
-	OPN->search_result(OPN, search->event,
-	                   user, NULL, opn_url_serialize(url),
-	                   1, &share);
 
+	opn_search_reply_add(path_nix, url, &share);
+	
 	share_finish(&share);
 	opn_url_free(url);
 
@@ -167,8 +156,6 @@ OPN_HANDLER(search_result)
 	free(freq);
 	free(len);
 	free(user);
-
-	timer_reset(search->timer);
 }
 
 OPN_HANDLER(search_finished)
@@ -178,11 +165,9 @@ OPN_HANDLER(search_finished)
 	if (!OPENNAP->searches)
 		return;
 
-	if (list_length(OPENNAP->searches) == 1) {
-		search = (OpnSearch *) OPENNAP->searches->data;
-
-		opn_search_unref(search);
-	} else {
+	if (list_length(OPENNAP->searches) == 1)
+		opn_search_unref((OpnSearch *) OPENNAP->searches->data);
+	else {
 		/* those will be handled by search->timer :) */
 	}
 }
@@ -199,7 +184,7 @@ OPN_HANDLER(download_ack)
 	ip = opn_packet_get_ip(packet);
 	port = opn_packet_get_uint32(packet);
 	file = opn_packet_get_str(packet, TRUE);
-printf("'%s'. %u\n", packet->data->str, port);
+
 	if (!(url = opn_url_new()))
 		return;
 	
