@@ -125,7 +125,8 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 	
 	while (sscanf(ptr, "%15s %hu %*[^\n]", ip, &port) == 2) {
 		if (port)
-			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip), port));
+			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip),
+			                                             port));
 		
 		if (!(ptr = strchr(ptr, '\n')) || !(++ptr) || !strlen(ptr))
 			break;
@@ -165,7 +166,8 @@ static void nodelist_load_napigator(OpnNodeList *nodelist)
 		tcp_close(nodelist->con);
 
 	/* FIXME lookup the ip of www.napigator.com here ;) */
-	if (!(nodelist->con = tcp_open(net_ip("216.116.119.192"), 80, FALSE)))
+	if (!(nodelist->con = tcp_open(net_ip(OPN_NAPIGATOR_IP), 80,
+	                               FALSE)))
 		return;
 	
 	input_add(nodelist->con->fd, nodelist, INPUT_WRITE,
@@ -186,7 +188,8 @@ static void nodelist_load_local(OpnNodeList *nodelist)
 
 	while (file_read_line(fp, &buf))
 		if (sscanf(buf, "%15[^:]:%hu", ip, &port) == 2)
-			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip), port));
+			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip),
+			                                             port));
 
 	return;
 }

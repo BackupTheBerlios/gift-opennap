@@ -44,6 +44,7 @@ OpnPacket *opn_packet_new()
 
 	memset(packet, 0, sizeof(OpnPacket));
 
+	packet->cmd = OPN_CMD_NONE;
 	packet->data = string_new(NULL, 0, 0, TRUE);
 
 	return packet;
@@ -168,7 +169,8 @@ static uint8_t *packet_serialize(OpnPacket *packet)
 	free(packet->serialized);
 	
 	/* payload of the message + type and size fields */
-	if (!(packet->serialized = malloc(packet->data->len + OPN_PACKET_HEADER_LEN)))
+	if (!(packet->serialized = malloc(packet->data->len +
+	                                  OPN_PACKET_HEADER_LEN)))
 		return NULL;
 
 	/* size and type are always in little-endian format */
@@ -195,15 +197,16 @@ static uint8_t *packet_serialize(OpnPacket *packet)
 OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size)
 {
 	OpnPacket *packet;
+	uint16_t cmd;
 
 	assert(data);
 	assert(size >= OPN_PACKET_HEADER_LEN);
 
 	if (!(packet = opn_packet_new()))
 		return NULL;
-
-	memcpy(&packet->cmd, &data[2], 2);
-	packet->cmd = BSWAP16(packet->cmd);
+	
+	memcpy(&cmd, &data[2], 2);
+	packet->cmd = BSWAP16(cmd);
 	
 	if ((size -= OPN_PACKET_HEADER_LEN)) {
 		string_appendu(packet->data, &data[OPN_PACKET_HEADER_LEN], size);
@@ -225,6 +228,7 @@ BOOL opn_packet_send(OpnPacket *packet, TCPC *con)
 	uint8_t *data;
 
 	assert(packet);
+	assert(packet->cmd != OPN_CMD_NONE);
 	assert(con);
 	
 	if (!(data = packet_serialize(packet)))
@@ -263,7 +267,9 @@ BOOL opn_packet_recv(TCPC *con, void *udata)
 	
 	packet = opn_packet_unserialize(buf, bytes);
 	
-	opn_protocol_handle(packet, udata);
+	if (packet->cmd != OPN_CMD_NONE)
+		opn_protocol_handle(packet, udata);
+	
 	opn_packet_free(packet);
 
 	return TRUE;
