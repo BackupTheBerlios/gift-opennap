@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_download.c,v 1.16 2003/08/08 14:35:07 tsauerbeck Exp $
+ * $Id: opn_download.c,v 1.17 2003/08/09 09:56:34 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -236,13 +236,13 @@ static void on_download_write(int fd, input_id input, void *udata)
 
 	input_remove(input);
 
-	tcp_send(download->con, (uint8_t *) "GET", 3);
+	tcp_writestr(download->con, "GET");
 
 	snprintf(buf, sizeof(buf), "%s \"%s\" %lu",
 	         OPN_ALIAS, download->url->file,
 	         download->chunk->start + download->chunk->transmit);
 
-	tcp_send(download->con, (uint8_t *) buf, strlen(buf));
+	tcp_writestr(download->con, buf);
 
 	input_add(fd, download, INPUT_READ, on_download_read_filesize,
 	          TIMEOUT_DEF);

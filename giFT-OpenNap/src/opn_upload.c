@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_upload.c,v 1.11 2003/08/08 11:01:41 tsauerbeck Exp $
+ * $Id: opn_upload.c,v 1.12 2003/08/09 09:56:34 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -66,7 +66,7 @@ static void on_upload_write(int fd, input_id input, void *udata)
 		return;
 
 	if (!(read = fread(buf, 1, size, upload->fp))
-	   || (sent = tcp_send(upload->con, buf, read)) <= 0) {
+	   || (sent = tcp_write(upload->con, buf, read)) <= 0) {
 		opn_upload_free(upload);
 		return;
 	}
@@ -85,7 +85,7 @@ static void on_upload_send_filesize(int fd, input_id input,
 
 	snprintf(buf, sizeof(buf), "%lu",
 	         upload->chunk->stop - upload->chunk->start);
-	tcp_send(upload->con, (uint8_t *) buf, strlen(buf));
+	tcp_writestr(upload->con, buf);
 	
 	input_add(upload->con->fd, upload, INPUT_WRITE,
 	          on_upload_write, TIMEOUT_DEF);
@@ -147,13 +147,11 @@ static void on_upload_read(int fd, input_id input, void *udata)
 			opn_upload_start(user, share, offset, con);
 			break;
 		case UPLOAD_AUTH_NOTSHARED:
-			tcp_send(con, (uint8_t *) OPN_MSG_FILENOTSHARED,
-			         strlen(OPN_MSG_FILENOTSHARED));
+			tcp_writestr(con, OPN_MSG_FILENOTSHARED);
 			tcp_close(con);
 			break;
 		case UPLOAD_AUTH_STALE:
-			tcp_send(con, (uint8_t *) OPN_MSG_INVALIDREQUEST,
-			         strlen(OPN_MSG_INVALIDREQUEST));
+			tcp_writestr(con, OPN_MSG_INVALIDREQUEST);
 			tcp_close(con);
 		case UPLOAD_AUTH_MAX:
 		case UPLOAD_AUTH_MAX_PERUSER:
@@ -173,7 +171,7 @@ void opn_upload_connect(int fd, input_id input, void *udata)
 	if (!(con = tcp_accept(listen, FALSE)))
 		return;
 	
-	tcp_send(con, (uint8_t *) "1", 1);
+	tcp_writestr(con, "1");
 
 	input_add(con->fd, con, INPUT_READ, on_upload_read, TIMEOUT_DEF);
 }

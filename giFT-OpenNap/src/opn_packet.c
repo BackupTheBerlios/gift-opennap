@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.c,v 1.11 2003/08/08 14:35:07 tsauerbeck Exp $
+ * $Id: opn_packet.c,v 1.12 2003/08/09 09:56:34 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -79,7 +79,7 @@ void opn_packet_set_cmd(OpnPacket *packet, OpnCommand cmd)
 static void packet_append(OpnPacket *packet, char *str)
 {
 	if (!packet->data->len)
-		string_appendf(packet->data, str);
+		string_append(packet->data, str);
 	else
 		string_appendf(packet->data, " %s", str);
 }
@@ -239,7 +239,7 @@ BOOL opn_packet_send(OpnPacket *packet, OpnSession *session)
 		return FALSE;
 	
 	bytes = packet->data->len + OPN_PACKET_HEADER_LEN;
-	return (tcp_send(session->con, data, bytes) == bytes);
+	return (tcp_write(session->con, data, bytes) == bytes);
 }
 
 /**
