@@ -24,7 +24,8 @@ OPN_HANDLER(login_error)
 {
 	assert(udata);
 
-	opn_session_free((OpnSession *) udata, TRUE);
+	OPENNAP->sessions = list_remove(OPENNAP->sessions, udata);
+	opn_session_free((OpnSession *) udata);
 }
 
 OPN_HANDLER(login_ack)

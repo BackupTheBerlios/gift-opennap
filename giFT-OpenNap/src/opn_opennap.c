@@ -52,10 +52,15 @@ static BOOL opn_connect(void *udata)
 		node = (OpnNode *) l->data;
 		
 		if (node->state == OPN_NODE_STATE_OFFLINE) {
-			session = opn_session_new();
+			if (!(session = opn_session_new()))
+				return TRUE;
+
+			OPENNAP->sessions = list_prepend(OPENNAP->sessions, session);
 			
-			if (!opn_session_connect(session, node))
-				opn_session_free(session, TRUE);
+			if (!opn_session_connect(session, node)) {
+				OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
+				opn_session_free(session);
+			}
 		}
 	}
 
