@@ -23,11 +23,10 @@ static void on_session_read(int fd, input_id input, void *udata)
 {
 	OpnSession *session = (OpnSession *) udata;
 	
-	if (net_sock_error(fd)) {
+	if (net_sock_error(fd) || !opn_packet_recv(session->con, session)) {
 		OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
 		opn_session_free(session);
-	} else
-		opn_packet_recv(session->con, session);
+	}
 }
 
 static void session_login(OpnSession *session)

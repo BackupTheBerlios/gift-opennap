@@ -258,7 +258,8 @@ BOOL opn_packet_recv(TCPC *con, void *udata)
 	/* get the length field of the message:
 	 * always in little-endian format
 	 */
-	tcp_peek(con, (uint8_t *) &len, 2);
+	if (tcp_peek(con, (uint8_t *) &len, 2) < 2)
+		return FALSE;
 	
 	len = MIN(BSWAP16(len) + OPN_PACKET_HEADER_LEN, sizeof(buf));
 

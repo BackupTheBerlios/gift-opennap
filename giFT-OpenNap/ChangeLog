@@ -1,3 +1,9 @@
+2003-07-27 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_session.c: Close the current session when
+          opn_packet_recv() fails
+        * src/opn_protocol_handlers.c: Use "Duration" instead of
+          "Length" for meta data
+
 2003-07-12 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: Removed breakpoint instruction
         * src/opn_opennap.h: Added a config key for napigator's IP

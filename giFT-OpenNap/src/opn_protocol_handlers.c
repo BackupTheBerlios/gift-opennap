@@ -86,7 +86,7 @@ OPN_HANDLER(search_result)
 	OpnSession *session = (OpnSession *) udata;
 	OpnUrl *url;
 	Share share;
-	char *md5, *user, *bitrate, *freq, *len, *root;
+	char *md5, *user, *bitrate, *freq, *duration, *root;
 	char *path_orig, *path_nix;
 	uint32_t ip, filesize;
 
@@ -106,14 +106,14 @@ OPN_HANDLER(search_result)
 	filesize = opn_packet_get_uint32(packet);
 	bitrate = opn_packet_get_str(packet, FALSE);
 	freq = opn_packet_get_str(packet, FALSE);
-	len = opn_packet_get_str(packet, FALSE);
+	duration = opn_packet_get_str(packet, FALSE);
 	
 	if (!(user = opn_packet_get_str(packet, FALSE))) {
 		free(path_orig);
 		free(md5);
 		free(bitrate);
 		free(freq);
-		free(len);
+		free(duration);
 		free(md5);
 		opn_url_free(url);
 		
@@ -129,7 +129,7 @@ OPN_HANDLER(search_result)
 	share.size = filesize;
 	share_set_meta(&share, "Bitrate", bitrate);
 	share_set_meta(&share, "Frequency", freq);
-	share_set_meta(&share, "Length", len);
+	share_set_meta(&share, "Duration", duration);
 
 	opn_url_set_file(url, path_orig, filesize);
 	opn_url_set_client(url, user, ip, 0);
@@ -145,7 +145,7 @@ OPN_HANDLER(search_result)
 	free(md5);
 	free(bitrate);
 	free(freq);
-	free(len);
+	free(duration);
 	free(user);
 }
 
