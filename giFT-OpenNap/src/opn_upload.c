@@ -72,9 +72,7 @@ static void on_upload_write(int fd, input_id input, void *udata)
 		return;
 	}
 
-	sent = tcp_send(upload->con, buf, MIN(remains, read));
-
-	if (sent <= 0) {
+	if ((sent = tcp_send(upload->con, buf, MIN(remains, read))) <= 0) {
 		tcp_close(upload->con);
 		return;
 	}
@@ -98,6 +96,7 @@ static void opn_upload_start(char *user, Share *share, uint32_t offset,
 
 	upload->con = con;
 	upload->fp = fopen(path, "rb");
+	fseek(upload->fp, offset, SEEK_SET);
 	
 	input_add(con->fd, upload, INPUT_WRITE,
 	          on_upload_write, TIMEOUT_DEF);
@@ -152,7 +151,8 @@ static void on_upload_read(int fd, input_id input, void *udata)
 			tcp_close(con);
 		case UPLOAD_AUTH_MAX:
 		case UPLOAD_AUTH_MAX_PERUSER:
-			/* ... */
+			/* FIXME, maybe
+			 */
 			break;
 		default:
 			tcp_close(con);
