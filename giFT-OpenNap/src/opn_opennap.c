@@ -44,8 +44,7 @@ static BOOL opn_connect(timer_id *timer)
 	OpnNode *node;
 	List *l;
 
-	if (list_length(OPENNAP->sessions) >=
-	    config_get_int(OPENNAP->cfg, "main/max_connections=15"))
+	if (list_length(OPENNAP->sessions) >= OPENNAP_MAX_CONNECTIONS)
 		return TRUE;
 	
 	for (l = OPENNAP->nodelist->nodes; l; l = l->next) {
@@ -64,10 +63,12 @@ static BOOL opn_connect(timer_id *timer)
 
 void main_timer()
 {
-	timer_id timer = timer_add(30 * SECONDS, (TimerCallback) opn_connect, &timer);
+	timer_id timer = timer_add(30 * SECONDS,
+                               (TimerCallback) opn_connect, &timer);
 }
 
-static int gift_cb_stats(Protocol *p, unsigned long *users, unsigned long *files, 
+static int gift_cb_stats(Protocol *p, unsigned long *users,
+                         unsigned long *files,
                          double *size, Dataset **extra)
 {
 	OpnSession *session;
@@ -191,7 +192,10 @@ BOOL OpenNap_init(Protocol *p)
 	/* tell your debugger to break here.
 	 * only works on x86 and GLibC 2
 	 */
+#ifdef OPENNAP_DEBUG \
+	&& defined (__i386__) && defined (__GNUC__) && __GNUC__ >= 2
 	__asm__ __volatile__ ("int $03");
+#endif
 	 
 	opn_proto = p;
 
