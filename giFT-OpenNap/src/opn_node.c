@@ -179,8 +179,8 @@ static void nodelist_load_local(OpnNodeList *nodelist)
 	in_port_t port;
 
 	if (!(fp = fopen(file, "r"))) {
-		snprintf(src, sizeof(src), "%s",
-		         DATADIR "/nodelist");
+		snprintf(src, sizeof(src), "%s/OpenNap/nodelist",
+		         platform_data_dir());
 
 		file_cp(src, file);
 

@@ -1,4 +1,4 @@
-AM_CFLAGS = $(CFLAGS) @GIFT_OPENNAP_CFLAGS@
+AM_CFLAGS = $(GIFT_OPENNAP_CFLAGS)
 
 plugin_LTLIBRARIES = libOpenNap.la
 
@@ -17,5 +17,6 @@ libOpenNap_la_SOURCES = \
 	opn_hash.c opn_hash.h \
 	opn_utils.c opn_utils.h
 
-libOpenNap_la_LIBADD = @GIFT_OPENNAP_LIBS@ -lgiftproto
+libOpenNap_la_LIBADD = $(GIFT_OPENNAP_LIBS)
+libOpenNap_la_LDFLAGS = -module -avoid-version
 

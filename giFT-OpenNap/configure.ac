@@ -4,7 +4,6 @@ AM_INIT_AUTOMAKE(giFT-OpenNap, 0.0.1)
 AM_CONFIG_HEADER(config.h)
 
 AH_TEMPLATE([OPENNAP_DEBUG], [Define to 1 if you want debugging output])
-AH_TEMPLATE([DATADIR], [Define to the directory where the giFT-OpenNap data files go])
 AH_VERBATIM([_GNU_SOURCE], [/* Enable GNU extensions on systems that have them. */
 #ifndef _GNU_SOURCE
 # define _GNU_SOURCE
@@ -12,6 +11,9 @@ AH_VERBATIM([_GNU_SOURCE], [/* Enable GNU extensions on systems that have them. 
 ])
 
 AC_PROG_CC
+AC_PROG_CC_STDC
+AC_PROG_INSTALL
+AC_HEADER_STDC
 AC_C_BIGENDIAN
 AM_DISABLE_STATIC
 AC_PROG_LIBTOOL
@@ -22,24 +24,17 @@ AC_ARG_ENABLE(debug,
 			CFLAGS=`echo "$CFLAGS -g -Wall -Werror" | sed s/" -s"//`
 		])
 
-PKG_CHECK_MODULES(GIFT_OPENNAP, libgift >= 0.10.0)
-
-if test x$prefix = xNONE; then
-    prefix=`pkg-config libgift --variable=prefix`
-fi
-
-plugindir=${prefix}/lib/giFT
-AC_SUBST(plugindir)
-
-AC_EXPAND_DIR(DATADIR, "$datadir/giFT/OpenNap")
-AC_DEFINE_UNQUOTED(DATADIR, "$DATADIR")
-AC_SUBST(DATADIR)
+GIFT_PLUGIN_PREFIX
+GIFT_PLUGIN_PKGCONFIG(GIFT_OPENNAP, 0.11.1, 0.12.0)
 
 AC_CHECK_FUNCS(strcasestr)
+
+GIFT_PLUGIN_INSTALL_PATH
 
 AC_OUTPUT([
 Makefile
 data/Makefile
+m4/Makefile
 src/Makefile
 ])
 

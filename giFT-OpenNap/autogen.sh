@@ -20,6 +20,9 @@ cd $srcdir
 # The autoconf cache (version after 2.52) is not reliable yet.
 rm -rf autom4te.cache
 
+rm -f aclocal.m4
+ACLOCAL_INCLUDES="-I m4"
+
 # Some old version of GNU build tools fail to set error codes.
 # Check that they generate some of the files they should.
 
