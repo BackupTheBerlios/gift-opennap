@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_search.c,v 1.16 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_search.c,v 1.17 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -152,10 +152,7 @@ BOOL opennap_search(Protocol *p, IFEvent *event, char *query,
 	for (l = OPENNAP->sessions; l; l = l->next) {
 		session = (OpnSession *) l->data;
 		
-		if (!session->node->connected)
-			continue;
-
-		if (!(packet = opn_packet_new()))
+		if (!session->node->connected || !(packet = opn_packet_new()))
 			continue;
 
 		opn_packet_set_cmd(packet, OPN_CMD_SEARCH);

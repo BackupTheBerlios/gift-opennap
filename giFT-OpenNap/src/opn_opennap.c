@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.c,v 1.21 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_opennap.c,v 1.22 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -143,8 +143,8 @@ static BOOL opennap_start(Protocol *p)
 	if (!(OPENNAP->con = tcp_bind(OPN_DATAPORT, FALSE)))
 		return FALSE;
 	
-	input_add(OPENNAP->con->fd, NULL, INPUT_READ, opn_upload_connect,
-	          TIMEOUT_DEF);
+	input_add(OPENNAP->con->fd, OPENNAP->con, INPUT_READ,
+	          opn_upload_connect, TIMEOUT_DEF);
 
 	if (OPN_RANDOM_USERNAME) {
 		set_username(alias);
@@ -194,10 +194,13 @@ static void setup_callbacks(Protocol *p)
 	p->source_remove = opennap_source_remove;
 	p->chunk_suspend = opennap_chunk_suspend;
 	p->chunk_resume = opennap_chunk_resume;
+	
+	p->upload_stop = opennap_upload_stop;
 
 	p->share_sync = opennap_share_sync;
 	p->share_add = opennap_share_add;
 	p->share_remove = opennap_share_remove;
+	p->share_show = opennap_share_show;
 	p->share_hide = opennap_share_hide;
 
 	p->stats = opennap_stats;

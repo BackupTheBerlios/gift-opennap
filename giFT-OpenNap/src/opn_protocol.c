@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol.c,v 1.7 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_protocol.c,v 1.8 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -30,6 +30,7 @@ static Handler handler_table[] = {
 	{OPN_CMD_DOWNLOAD_ERROR, OPN_HANDLER_FUNC(download_error)},
 	{OPN_CMD_STATS, OPN_HANDLER_FUNC(stats)},
 	{OPN_CMD_ERROR, OPN_HANDLER_FUNC(error)},
+	{OPN_CMD_UPLOAD_REQUEST, OPN_HANDLER_FUNC(upload_request)},
 	{OPN_CMD_QUEUE_LIMIT_SV, OPN_HANDLER_FUNC(queue_limit)},
 	{OPN_CMD_PING, OPN_HANDLER_FUNC(ping)},
 	{OPN_CMD_NONE, NULL}
@@ -54,12 +55,10 @@ static void init_handlers()
 		handlers[ptr->cmd] = ptr->func;
 }
 
-BOOL opn_protocol_handle(OpnPacket *packet, void *udata)
+BOOL opn_protocol_handle(OpnPacket *packet, OpnSession *session)
 {
 	static BOOL initialized = FALSE;
 
-	assert(packet);
-	
 	if (packet->cmd < OPN_CMD_NONE || packet->cmd > OPN_CMD_NUM)
 		return FALSE;
 
@@ -69,7 +68,7 @@ BOOL opn_protocol_handle(OpnPacket *packet, void *udata)
 	}
 	
 	if (handlers[packet->cmd])
-		(*handlers[packet->cmd])(packet, udata);
+		(*handlers[packet->cmd])(packet, session);
 	
 	return TRUE;
 }

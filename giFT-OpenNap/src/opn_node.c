@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_node.c,v 1.19 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_node.c,v 1.20 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -111,7 +111,8 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 		return;
 	}
 	
-	if ((bytes = tcp_recv(nodelist->con, buf, sizeof(buf) - 1)) <= 0) {
+	if ((bytes = tcp_recv(nodelist->con, (uint8_t *) buf,
+	                      sizeof(buf) - 1)) <= 0) {
 		/* so now we got our serverlist... connect! */
 		tcp_close(nodelist->con);
 		nodelist->con = NULL;
@@ -149,13 +150,7 @@ static void on_napigator_connect(int fd, input_id input, void *udata)
 	
 	input_remove(input);
 
-	/* remove old nodes
-	 * FIXME we could also use a Hashtable to store the nodes to make
-	 * sure there are dupes
-	 */
-	nodelist_nodes_remove(nodelist);
-	
-	tcp_send(nodelist->con, buf, strlen(buf));
+	tcp_send(nodelist->con, (uint8_t *) buf, strlen(buf));
 
 	input_add(fd, nodelist, INPUT_READ, on_napigator_read,
 	          TIMEOUT_DEF);

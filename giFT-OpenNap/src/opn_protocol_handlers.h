@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol_handlers.h,v 1.6 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_protocol_handlers.h,v 1.7 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -29,6 +29,7 @@ OPN_HANDLER(search_finished);
 
 OPN_HANDLER(download_ack);
 OPN_HANDLER(download_error);
+OPN_HANDLER(upload_request);
 OPN_HANDLER(queue_limit);
 
 OPN_HANDLER(stats);

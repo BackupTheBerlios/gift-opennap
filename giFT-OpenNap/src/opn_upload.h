@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_upload.h,v 1.3 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_upload.h,v 1.4 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -31,6 +31,8 @@ typedef struct {
 OpnUpload *opn_upload_new();
 void opn_upload_free(OpnUpload *upload);
 
+void opennap_upload_stop(Protocol *p, Transfer *t, Chunk *c, Source *s);
+	
 void opn_upload_connect(int fd, input_id input, void *udata);
 
 #endif

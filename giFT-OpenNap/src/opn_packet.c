@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.c,v 1.9 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_packet.c,v 1.10 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -229,6 +229,7 @@ OpnPacket *opn_packet_unserialize(uint8_t *data, uint16_t size)
 BOOL opn_packet_send(OpnPacket *packet, TCPC *con)
 {
 	uint8_t *data;
+	int bytes;
 
 	assert(packet);
 	assert(packet->cmd != OPN_CMD_NONE);
@@ -236,43 +237,42 @@ BOOL opn_packet_send(OpnPacket *packet, TCPC *con)
 	
 	if (!(data = packet_serialize(packet)))
 		return FALSE;
-
-	tcp_send(con, data, packet->data->len + OPN_PACKET_HEADER_LEN);
-
-	return TRUE;
+	
+	bytes = packet->data->len + OPN_PACKET_HEADER_LEN;
+	return (tcp_send(con, data, bytes) == bytes);
 }
 
 /**
  * Reads a packet and handles it.
  * 
- * @param con The connection to read the packet from
- * @param udata Arbitrary data probably needed in the handler functions
+ * @param session The session to read the packet from
  * @return TRUE if a packet has been read, else FALSE.
  */
-BOOL opn_packet_recv(TCPC *con, void *udata)
+BOOL opn_packet_recv(OpnSession *session)
 {
 	OpnPacket *packet;
 	uint8_t buf[2048];
 	int bytes;
 	uint16_t len;
 
-	assert(con);
+	assert(session);
 
 	/* get the length field of the message:
 	 * always in little-endian format
 	 */
-	if (tcp_peek(con, (uint8_t *) &len, 2) < 2)
+	if (tcp_peek(session->con, (uint8_t *) &len, 2) < 2)
 		return FALSE;
 	
 	len = MIN(BSWAP16(len) + OPN_PACKET_HEADER_LEN, sizeof(buf));
-
-	if ((bytes = tcp_recv(con, buf, len)) < OPN_PACKET_HEADER_LEN)
+	bytes = tcp_recv(session->con, buf, len);
+	
+	if (bytes < OPN_PACKET_HEADER_LEN)
 		return FALSE;
 	
 	packet = opn_packet_unserialize(buf, bytes);
 	
 	if (packet->cmd != OPN_CMD_NONE)
-		opn_protocol_handle(packet, udata);
+		opn_protocol_handle(packet, session);
 	
 	opn_packet_free(packet);
 

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_session.c,v 1.12 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_session.c,v 1.13 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -26,7 +26,7 @@ static void on_session_read(int fd, input_id input, void *udata)
 {
 	OpnSession *session = (OpnSession *) udata;
 	
-	if (net_sock_error(fd) || !opn_packet_recv(session->con, session)) {
+	if (net_sock_error(fd) || !opn_packet_recv(session)) {
 		OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
 		opn_session_free(session);
 	}

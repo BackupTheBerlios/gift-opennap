@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_download.c,v 1.13 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_download.c,v 1.14 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -78,7 +78,8 @@ OpnDownload *opn_download_find_by_chunk(Chunk *c)
 	return opn_download_find(find_by_chunk, c);
 }
 
-BOOL opennap_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Source *source)
+BOOL opennap_download_start(Protocol *p, Transfer *transfer,
+                            Chunk *chunk, Source *source)
 {
 	OpnDownload *download;
 	OpnSession *session;
@@ -254,13 +255,13 @@ static void on_download_write(int fd, input_id input, void *udata)
 	
 	input_remove(input);
 
-	tcp_send(download->con, "GET", 3);
+	tcp_send(download->con, (uint8_t *) "GET", 3);
 
 	snprintf(buf, sizeof(buf), "%s \"%s\" %lu",
 	         OPN_ALIAS, download->url->file,
 	         download->chunk->start + download->chunk->transmit);
 
-	tcp_send(download->con, buf, strlen(buf));
+	tcp_send(download->con, (uint8_t *) buf, strlen(buf));
 
 	input_add(fd, download, INPUT_READ, on_download_read_filesize,
 	          TIMEOUT_DEF);
@@ -278,7 +279,7 @@ static void on_download_connect(int fd, input_id input, void *udata)
 	
 	input_remove(input);
 
-	if (tcp_recv(download->con, &c, 1) <= 0 || c != '1') {
+	if (tcp_recv(download->con, (uint8_t *) &c, 1) <= 0 || c != '1') {
 		opn_download_free(download);
 		return;
 	}

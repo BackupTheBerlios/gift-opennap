@@ -1,4 +1,9 @@
-$Id: ChangeLog,v 1.26 2003/08/05 07:47:45 tsauerbeck Exp $
+$Id: ChangeLog,v 1.27 2003/08/07 20:17:37 tsauerbeck Exp $
+
+2003-08-07 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_opennap.c, src/opn_upload.c: Upload fixes
+        * src/opn_protocol.h, src/opn_protocol_handlers.c:
+          Implemented commands 607, 608
 
 2003-08-04 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: gift-setup can now be used to configure

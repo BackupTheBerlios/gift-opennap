@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol_handlers.c,v 1.17 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_protocol_handlers.c,v 1.18 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -27,22 +27,16 @@
 
 OPN_HANDLER(login_error)
 {
-	assert(udata);
-
 #ifdef OPENNAP_DEBUG
 	OPN->DBGFN(OPN, "login error: %s\n", packet->read);
 #endif
 
-	OPENNAP->sessions = list_remove(OPENNAP->sessions, udata);
-	opn_session_free((OpnSession *) udata);
+	OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
+	opn_session_free((OpnSession *) session);
 }
 
 OPN_HANDLER(login_ack)
 {
-	OpnSession *session = (OpnSession *) udata;
-
-	assert(session);
-	
 	session->node->connected = TRUE;
 	
 	if (opn_share_enabled() && !opn_share_syncing())
@@ -51,10 +45,6 @@ OPN_HANDLER(login_ack)
 
 OPN_HANDLER(stats)
 {
-	OpnSession *session = (OpnSession *) udata;
-
-	assert(session);
-
 	session->stats.users = opn_packet_get_uint32(packet);
 	session->stats.files = opn_packet_get_uint32(packet);
 	session->stats.size = (double) opn_packet_get_uint32(packet);
@@ -69,10 +59,7 @@ OPN_HANDLER(error)
 
 OPN_HANDLER(ping)
 {
-	OpnSession *session = (OpnSession *) udata;
 	OpnPacket *pong;
-
-	assert(session);
 
 	if (!(pong = opn_packet_new()))
 		return;
@@ -86,14 +73,12 @@ OPN_HANDLER(ping)
 
 OPN_HANDLER(search_result)
 {
-	OpnSession *session = (OpnSession *) udata;
 	OpnUrl *url;
 	Share share;
 	char *md5, *user, *bitrate, *freq, *duration, *root;
 	char *path_orig, *path_nix;
 	uint32_t ip, filesize;
 
-	assert(session);
 	assert(packet->data);
 	assert(packet->data->str);
 
@@ -204,6 +189,32 @@ OPN_HANDLER(download_ack)
 OPN_HANDLER(download_error)
 {
 	/* FIXME */
+}
+
+/**
+ * The server tells us some clients wants us to upload a file
+ * - we're sending a positive answer here everytime.
+ */
+OPN_HANDLER(upload_request)
+{
+	OpnPacket *answer;
+	char *user, *file;
+
+	if (!(answer = opn_packet_new()))
+		return;
+	
+	user = opn_packet_get_str(packet, FALSE);
+	file = opn_packet_get_str(packet, TRUE);
+
+	opn_packet_set_cmd(answer, OPN_CMD_UPLOAD_ACK);
+	opn_packet_put_str(answer, user, FALSE);
+	opn_packet_put_str(answer, file, TRUE);
+
+	opn_packet_send(answer, session->con);
+	opn_packet_free(answer);
+	
+	free(user);
+	free(file);
 }
 
 OPN_HANDLER(queue_limit)

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_share.h,v 1.4 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_share.h,v 1.5 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -24,6 +24,7 @@
 void opennap_share_sync(Protocol *p, BOOL begin);
 BOOL opennap_share_add(Protocol *p, Share *file, void *udata);
 BOOL opennap_share_remove(Protocol *p, Share *file, void *udata);
+void opennap_share_show(Protocol *p);
 void opennap_share_hide(Protocol *p);
 
 BOOL opn_share_syncing();

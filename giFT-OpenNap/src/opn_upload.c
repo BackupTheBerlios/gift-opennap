@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_upload.c,v 1.9 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_upload.c,v 1.10 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -48,40 +48,47 @@ void opn_upload_free(OpnUpload *upload)
 	free(upload);
 }
 
+void opennap_upload_stop(Protocol *p, Transfer *t, Chunk *c, Source *s)
+{
+	assert(c);
+	
+	opn_upload_free((OpnUpload *) c->udata);
+	c->udata = NULL;
+}
+
 static void on_upload_write(int fd, input_id input, void *udata)
 {
 	OpnUpload *upload = (OpnUpload *) udata;
 	uint8_t buf[RW_BUFFER];
-	size_t size = sizeof(buf), read, sent;
-	off_t remains;
+	size_t size, read, sent;
 
-#if 0
-	if (!(size = upload_throttle(transfer->chunk, sizeof(buf))))
+	if (!(size = upload_throttle(upload->chunk, sizeof(buf))))
 		return;
-#endif
 
-	remains = upload->chunk->stop -
-	          (upload->chunk->start + upload->chunk->transmit);
-
-	if (remains <= 0) {
-		tcp_close(upload->con);
-		OPN->chunk_write(OPN, upload->transfer, upload->chunk,
-		                 upload->chunk->source, NULL, 0);
+	if (!(read = fread(buf, 1, size, upload->fp))
+	   || (sent = tcp_send(upload->con, buf, read)) <= 0) {
+		opn_upload_free(upload);
 		return;
 	}
-
-	if (!(read = fread(buf, 1, size, upload->fp))) {
-		tcp_close(upload->con);
-		return;
-	}
-
-	if ((sent = tcp_send(upload->con, buf, MIN(remains, read))) <= 0) {
-		tcp_close(upload->con);
-		return;
-	}
-
+	
 	OPN->chunk_write(OPN, upload->transfer, upload->chunk,
 	                 upload->chunk->source, buf, sent);
+}
+
+static void on_upload_send_filesize(int fd, input_id input,
+                                    void *udata)
+{
+	OpnUpload *upload = (OpnUpload *) udata;
+	char buf[16];
+
+	input_remove(input);
+
+	snprintf(buf, sizeof(buf), "%lu",
+	         upload->chunk->stop - upload->chunk->start);
+	tcp_send(upload->con, (uint8_t *) buf, strlen(buf));
+	
+	input_add(upload->con->fd, upload, INPUT_WRITE,
+	          on_upload_write, TIMEOUT_DEF);
 }
 
 static void opn_upload_start(char *user, Share *share, uint32_t offset,
@@ -95,14 +102,15 @@ static void opn_upload_start(char *user, Share *share, uint32_t offset,
 	
 	upload->transfer = OPN->upload_start(OPN, &upload->chunk,
 	                                     user, share, offset,
-	                                     share->size - offset);
+	                                     share->size);
 
+	upload->chunk->udata = upload;
 	upload->con = con;
 	upload->fp = fopen(path, "rb");
 	fseek(upload->fp, offset, SEEK_SET);
 	
 	input_add(con->fd, upload, INPUT_WRITE,
-	          on_upload_write, TIMEOUT_DEF);
+	          on_upload_send_filesize, TIMEOUT_DEF);
 	free(path);
 }
 
@@ -110,17 +118,17 @@ static void on_upload_read(int fd, input_id input, void *udata)
 {
 	TCPC *con = (TCPC *) udata;
 	Share *share;
-	uint8_t buf[PATH_MAX + 256];
+	char buf[PATH_MAX + 256], file[PATH_MAX + 1] = {0}, user[64] = {0};
+	char fmt[32];
 	int bytes;
-	uint32_t offset;
-	char file[PATH_MAX + 1], user[64], fmt[32];
-	
+	uint32_t offset = 0;
+
 	if (net_sock_error(fd)) {
 		tcp_close(con);
 		return;
 	}
 
-	if ((bytes = tcp_recv(con, buf, sizeof(buf) - 1)) <= 0)
+	if ((bytes = tcp_recv(con, (uint8_t *) buf, sizeof(buf) - 1)) <= 0)
 		return;
 
 	buf[bytes] = 0;
@@ -130,11 +138,11 @@ static void on_upload_read(int fd, input_id input, void *udata)
 
 	input_remove(input);
 
-	snprintf(fmt, sizeof(fmt), "%%%is \"%%%is[^\"]\" %%lu",
+	snprintf(fmt, sizeof(fmt), "%%%is \"%%%i[^\"]\" %%lu",
 	         sizeof(user) - 1, PATH_MAX);
-	sscanf(buf, fmt, user, file, &offset);
+	sscanf(&buf[3], fmt, user, file, &offset);
 	
-	if (!(share = OPN->share_lookup(OPN, SHARE_LOOKUP_PATH, file))) {
+	if (!(share = OPN->share_lookup(OPN, SHARE_LOOKUP_HPATH, file))) {
 		tcp_close(con);
 		return;
 	}
@@ -144,12 +152,12 @@ static void on_upload_read(int fd, input_id input, void *udata)
 			opn_upload_start(user, share, offset, con);
 			break;
 		case UPLOAD_AUTH_NOTSHARED:
-			tcp_send(con, OPN_MSG_FILENOTSHARED,
+			tcp_send(con, (uint8_t *) OPN_MSG_FILENOTSHARED,
 			         strlen(OPN_MSG_FILENOTSHARED));
 			tcp_close(con);
 			break;
 		case UPLOAD_AUTH_STALE:
-			tcp_send(con, OPN_MSG_INVALIDREQUEST,
+			tcp_send(con, (uint8_t *) OPN_MSG_INVALIDREQUEST,
 			         strlen(OPN_MSG_INVALIDREQUEST));
 			tcp_close(con);
 		case UPLOAD_AUTH_MAX:
@@ -165,13 +173,13 @@ static void on_upload_read(int fd, input_id input, void *udata)
 
 void opn_upload_connect(int fd, input_id input, void *udata)
 {
-	TCPC *con;
-	
-	if (!(con = tcp_accept(OPENNAP->con, FALSE)))
+	TCPC *con, *listen = (TCPC *) udata;
+
+	if (!(con = tcp_accept(listen, FALSE)))
 		return;
 	
-	tcp_send(con, "1", 1);
+	tcp_send(con, (uint8_t *) "1", 1);
 
-	input_add(fd, con, INPUT_READ, on_upload_read, TIMEOUT_DEF);
+	input_add(con->fd, con, INPUT_READ, on_upload_read, TIMEOUT_DEF);
 }
 

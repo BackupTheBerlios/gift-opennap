@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol.h,v 1.7 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_protocol.h,v 1.8 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -44,6 +44,8 @@ typedef enum {
 	OPN_CMD_UPLOAD_FINISH = 221,
 	OPN_CMD_CLIENT_DISCONNECT = 316,
 	OPN_CMD_ERROR = 404,
+	OPN_CMD_UPLOAD_REQUEST = 607,
+	OPN_CMD_UPLOAD_ACK = 608,
 	OPN_CMD_QUEUE_LIMIT_CL = 619,
 	OPN_CMD_QUEUE_LIMIT_SV = 620,
 	OPN_CMD_MOTD = 621,
@@ -55,7 +57,7 @@ typedef enum {
 } OpnCommand;
 
 #define OPN_HANDLER_FUNC(func) opn_proto_handler_##func
-#define OPN_HANDLER_PARAMS struct _OpnPacket *packet, void *udata
+#define OPN_HANDLER_PARAMS struct _OpnPacket *packet, OpnSession *session
 #define OPN_HANDLER(func) void OPN_HANDLER_FUNC(func)(OPN_HANDLER_PARAMS)
 
 typedef void (*HandlerFn)(OPN_HANDLER_PARAMS);
@@ -65,7 +67,7 @@ typedef struct {
 	HandlerFn func;
 } Handler;
 
-BOOL opn_protocol_handle(struct _OpnPacket *packet, void *udata);
+BOOL opn_protocol_handle(struct _OpnPacket *packet, OpnSession *session);
 
 #endif
 

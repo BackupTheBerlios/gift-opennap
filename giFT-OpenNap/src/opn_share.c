@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_share.c,v 1.7 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_share.c,v 1.8 2003/08/07 20:17:37 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -76,8 +76,8 @@ void opn_share_refresh(OpnSession *session)
 		freq = share_get_meta(share, "Frequency");
 		len = share_get_meta(share, "Length");
 
-		opn_packet_put_str(packet, share->path, TRUE);
-		opn_packet_put_str(packet, hash->data, FALSE);
+		opn_packet_put_str(packet, share_get_hpath(share), TRUE);
+		opn_packet_put_str(packet, (char *) hash->data, FALSE);
 		opn_packet_put_uint32(packet, share->size);
 		opn_packet_put_str(packet, bitrate ? bitrate : "0", FALSE);
 		opn_packet_put_str(packet, freq ? freq : "0", FALSE);
@@ -106,7 +106,6 @@ void share_remove()
 			continue;
 
 		if ((packet = opn_packet_new())) {
-
 			opn_packet_set_cmd(packet, OPN_CMD_SHARE_REMOVE_ALL);
 			opn_packet_send(packet, session->con);
 			opn_packet_free(packet);
