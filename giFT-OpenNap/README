@@ -42,7 +42,8 @@ plugins = ...
 Configuration
 =============
 
-See ~/.giFT/OpenNap/OpenNap.conf - it's quite well documented.
+To configure the OpenNap plugin, just run "gift-setup" again after
+installation.
 If you're just getting started, the defaults will work well for you.
 
 If you want to use giFT OpenNap with a local server, put some IPs

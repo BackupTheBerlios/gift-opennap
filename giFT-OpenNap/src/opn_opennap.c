@@ -105,21 +105,6 @@ static int opennap_stats(Protocol *p, unsigned long *users,
 	return i;
 }
 
-static Config *config_load()
-{
-	Config *cfg;
-	char src[PATH_MAX + 1];
-	
-	if (!(cfg = gift_config_new("OpenNap"))) {
-		snprintf(src, sizeof(src), "%s", DATADIR "/OpenNap.conf");
-		file_cp(src, gift_conf_path("OpenNap/OpenNap.conf"));
-		
-		cfg = gift_config_new("OpenNap");
-	}
-
-	return cfg;
-}
-
 /**
  * Creates a random username
  *
@@ -147,8 +132,8 @@ static BOOL opennap_start(Protocol *p)
 {
 	char alias[16];
 	
-	if (!(OPENNAP->cfg = config_load())) {
-		GIFT_ERROR(("Can't load OpenNap configuration!"));
+	if (!(OPENNAP->cfg = gift_config_new("OpenNap"))) {
+		OPN->err(OPN, "Can't load OpenNap configuration!");
 		return FALSE;
 	}
 

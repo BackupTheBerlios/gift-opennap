@@ -1,3 +1,7 @@
+2003-08-04 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_opennap.c: gift-setup can now be used to configure
+          giFT-OpenNap
+
 2003-07-27 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_session.c: Close the current session when
           opn_packet_recv() fails
