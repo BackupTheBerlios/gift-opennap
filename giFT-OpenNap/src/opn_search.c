@@ -169,3 +169,16 @@ BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 	return (opn_search_unref(search) > 0);
 }
 
+static int foreach_search_free(OpnSearch *search, void *udata)
+{
+	opn_search_free(search);
+
+	return 1;
+}
+
+void opn_searches_free(List *searches)
+{
+	list_foreach_remove(searches,
+	                    (ListForeachFunc) foreach_search_free, NULL);
+}
+

@@ -26,12 +26,7 @@ static Handler handler_table[] = {
 	{OPN_CMD_DOWNLOAD_ACK, OPN_HANDLER_FUNC(download_ack)},
 	{OPN_CMD_DOWNLOAD_ERROR, OPN_HANDLER_FUNC(download_error)},
 	{OPN_CMD_STATS, OPN_HANDLER_FUNC(stats)},
-	{OPN_CMD_CLIENT_DISCONNECT, OPN_HANDLER_FUNC(null)},
-	{OPN_CMD_ERROR, OPN_HANDLER_FUNC(null)},
-	{OPN_CMD_MOTD, OPN_HANDLER_FUNC(null)},
-	{OPN_CMD_LOGIN_ATTEMPT, OPN_HANDLER_FUNC(null)},
 	{OPN_CMD_PING, OPN_HANDLER_FUNC(ping)},
-	{OPN_CMD_CLIENT_REDIRECT, OPN_HANDLER_FUNC(null)},
 	{OPN_CMD_NONE, NULL}
 };
 
@@ -69,11 +64,6 @@ BOOL opn_protocol_handle(OpnPacket *packet, void *udata)
 	
 	if (handlers[packet->cmd])
 		(*handlers[packet->cmd])(packet->data, udata);
-	else {
-#ifdef OPENNAP_DEBUG
-		printf("unhandled packet (cmd = %i)!\n", packet->cmd);
-#endif
-	}
 	
 	return TRUE;
 }

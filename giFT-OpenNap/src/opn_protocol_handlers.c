@@ -20,10 +20,6 @@
 #include "opn_download.h"
 #include "opn_search.h"
 
-OPN_HANDLER(null)
-{
-}
-
 OPN_HANDLER(login_error)
 {
 	assert(udata);

@@ -146,8 +146,6 @@ static BOOL gift_cb_start(Protocol *p)
 
 static void gift_cb_destroy(Protocol *p)
 {
-	List *l;
-	
 	if (!OPENNAP)
 		return;
 
@@ -155,11 +153,11 @@ static void gift_cb_destroy(Protocol *p)
 
 	config_free(OPENNAP->cfg);
 
-	for (l = OPENNAP->sessions; l; l = l->next)
-		opn_session_free((OpnSession *) l->data);
+	if (OPENNAP->searches)
+		opn_searches_free(OPENNAP->searches);
 
-	for (l = OPENNAP->searches; l; l = l->next)
-		opn_search_free((OpnSearch *) l->data);
+	if (OPENNAP->sessions)
+		opn_sessions_free(OPENNAP->sessions);
 	
 	opn_nodelist_free(OPENNAP->nodelist);
 	free(OPENNAP);

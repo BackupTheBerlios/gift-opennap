@@ -42,6 +42,7 @@ OpnSession *opn_session_new();
 void opn_session_free(OpnSession *session);
 OpnSession *opn_session_find(OpnUrl *url);
 int opn_session_connect(OpnSession *session, OpnNode *node);
+void opn_sessions_free(List *sessions);
 
 #endif
 

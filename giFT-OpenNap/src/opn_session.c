@@ -122,3 +122,18 @@ OpnSession *opn_session_find(OpnUrl *url)
 	return NULL;
 }
 
+static int foreach_session_free(OpnSession *session, void *udata)
+{
+	opn_session_free(session);
+
+	return 1;
+}
+
+void opn_sessions_free(List *sessions)
+{
+	assert(sessions);
+	
+	list_foreach_remove(sessions,
+	                    (ListForeachFunc) foreach_session_free, NULL);
+}
+

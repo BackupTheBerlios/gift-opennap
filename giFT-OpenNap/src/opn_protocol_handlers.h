@@ -18,8 +18,6 @@
 #ifndef __OPN_PROTOCOL_HANDLERS_H
 #define __OPN_PROTOCOL_HANDLERS_H
 
-OPN_HANDLER(null);
-
 OPN_HANDLER(login_error);
 OPN_HANDLER(login_ack);
 
