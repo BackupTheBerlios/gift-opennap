@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.c,v 1.13 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_packet.c,v 1.14 2003/08/12 11:38:04 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -47,8 +47,10 @@ OpnPacket *opn_packet_new()
 
 	memset(packet, 0, sizeof(OpnPacket));
 
+	if (!(packet->data = string_new(NULL, 0, 0, TRUE)))
+		return NULL;
+	
 	packet->cmd = OPN_CMD_NONE;
-	packet->data = string_new(NULL, 0, 0, TRUE);
 
 	return packet;
 }
@@ -122,22 +124,14 @@ char *opn_packet_get_str(OpnPacket *packet, BOOL quoted)
 	} else {
 		/* string is delimited by spaces */
 		start = packet->read;
-		
-		if (!(end = strchr(start, ' ')))
-			end = strchr(start, 0);
-		/* end = strchr(start, ' '); */
+		end = strchr(start, ' ');
 	}
 
-	packet->read = end + (quoted ? 2 : 1);
-	
-	return STRDUP_N(start, end - start);
-	/*packet->read = end;
-	
-	if (end) {
+	if ((packet->read = end)) {
 		packet->read += quoted ? 2 : 1;
 		return STRDUP_N(start, end - start);
 	} else
-		return STRDUP(start);*/
+		return STRDUP(start);
 }
 
 uint32_t opn_packet_get_uint32(OpnPacket *packet)
