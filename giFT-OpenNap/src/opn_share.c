@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_share.c,v 1.11 2003/08/14 20:19:51 tsauerbeck Exp $
+ * $Id: opn_share.c,v 1.12 2003/08/14 20:57:02 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -64,7 +64,7 @@ void opn_share_refresh(OpnSession *session)
 		return;
 
 	for (l = OPENNAP->shares; l; l = l->next) {
-		share = (Share *) l->data;
+		share = l->data;
 		hash = share_get_hash(share, OPN_HASH);
 
 		if (!(packet = opn_packet_new()))
@@ -99,7 +99,7 @@ void share_remove()
 	List *l;
 	
 	for (l = OPENNAP->sessions; l; l = l->next) {
-		session = (OpnSession *) l->data;
+		session = l->data;
 
 		if (session->node->state != OPN_NODE_STATE_CONNECTED)
 			continue;
@@ -130,8 +130,8 @@ void opennap_share_sync(Protocol *p, BOOL begin)
 	 */
 	if (!begin)
 		for (l = OPENNAP->sessions; l; l = l->next) {
-			share_remove((OpnSession *) l->data);
-			opn_share_refresh((OpnSession *) l->data);
+			share_remove(l->data);
+			opn_share_refresh(l->data);
 		}
 }
 
@@ -177,7 +177,7 @@ void opennap_share_hide(Protocol *p)
 	share_enabled = FALSE;
 
 	for (l = OPENNAP->sessions; l; l = l->next)
-		share_remove((OpnSession *) l->data);
+		share_remove(l->data);
 }
 
 /**
@@ -193,6 +193,6 @@ void opennap_share_show(Protocol *p)
 	share_enabled = TRUE;
 
 	for (l = OPENNAP->sessions; l; l = l->next)
-		opn_share_refresh((OpnSession *) l->data);
+		opn_share_refresh(l->data);
 }
 

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_download.c,v 1.19 2003/08/13 09:20:13 tsauerbeck Exp $
+ * $Id: opn_download.c,v 1.20 2003/08/14 20:57:02 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -47,18 +47,14 @@ static BOOL find_by_user(OpnDownload *dl, void *udata)
 
 static OpnDownload *opn_download_find(OpnDownloadFindCb cb, void *udata)
 {
-	OpnDownload *download;
 	List *l;
 
 	assert(cb);
 	assert(udata);
 
-	for (l = OPENNAP->downloads; l; l = l->next) {
-		download = (OpnDownload *) l->data;
-
-		if ((*cb)((OpnDownload *) l->data, udata))
-			return download;
-	}
+	for (l = OPENNAP->downloads; l; l = l->next)
+		if ((*cb)(l->data, udata))
+			return l->data;
 
 	return NULL;
 }

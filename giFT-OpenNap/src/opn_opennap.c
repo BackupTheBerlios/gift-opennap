@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.c,v 1.26 2003/08/14 20:19:51 tsauerbeck Exp $
+ * $Id: opn_opennap.c,v 1.27 2003/08/14 20:57:02 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -39,7 +39,7 @@ uint32_t opn_connection_count()
 	uint32_t i;
 	
 	for (l = OPENNAP->sessions, i = 0; l; l = l->next) {
-		session = (OpnSession *) l->data;
+		session = l->data;
 
 		if (session->node->state == OPN_NODE_STATE_CONNECTED)
 			i++;
@@ -58,7 +58,7 @@ static BOOL on_connect_timer(void *udata)
 		return TRUE;
 	
 	for (l = OPENNAP->nodelist->nodes; l; l = l->next) {
-		node = (OpnNode *) l->data;
+		node = l->data;
 	
 		/* Check whether we are already connected to that node */
 		if (node->state != OPN_NODE_STATE_DISCONNECTED)
@@ -101,7 +101,7 @@ static int opennap_stats(Protocol *p, unsigned long *users,
 	*users = *files = *size = 0;
 
 	for (l = OPENNAP->sessions, i = 0; l; l = l->next, i++) {
-		session = (OpnSession *) l->data;
+		session = l->data;
 
 		*users += session->stats.users;
 		*files += session->stats.files;
@@ -206,6 +206,7 @@ static void setup_callbacks(Protocol *p)
 	p->destroy = opennap_destroy;
 
 	p->search = opennap_search;
+	p->search_cancel = opennap_search_cancel;
 
 	p->download_start = opennap_download_start;
 	p->download_stop = opennap_download_stop;

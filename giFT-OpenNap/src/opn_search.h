@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_search.h,v 1.10 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_search.h,v 1.11 2003/08/14 20:57:02 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -45,6 +45,7 @@ uint32_t opn_search_reply_add(char *file, OpnUrl *url, Share *share);
 
 BOOL opennap_search(Protocol *p, IFEvent *event, char *query,
                     char *exclude, char *realm, Dataset *meta);
+void opennap_search_cancel(Protocol *p, IFEvent *event);
 
 #endif
 

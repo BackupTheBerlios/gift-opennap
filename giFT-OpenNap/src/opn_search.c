@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_search.c,v 1.20 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_search.c,v 1.21 2003/08/14 20:57:02 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -115,7 +115,7 @@ uint32_t opn_search_reply_add(char *file, OpnUrl *url, Share *share)
 	assert(share);
 
 	for (l = OPENNAP->searches, i = 0; l; l = l->next) {
-		search = (OpnSearch *) l->data;
+		search = l->data;
 
 		match[0] = file_cmp_query(file, search->query);
 		match[1] = file_cmp_query(file, search->exclude);
@@ -151,7 +151,7 @@ BOOL opennap_search(Protocol *p, IFEvent *event, char *query,
 	search->event = event;
 	
 	for (l = OPENNAP->sessions; l; l = l->next) {
-		session = (OpnSession *) l->data;
+		session = l->data;
 		
 		if (session->node->state != OPN_NODE_STATE_CONNECTED
 		   || !(packet = opn_packet_new()))
@@ -175,6 +175,21 @@ BOOL opennap_search(Protocol *p, IFEvent *event, char *query,
 #endif
 
 	return (opn_search_unref(search) > 0);
+}
+
+void opennap_search_cancel(Protocol *p, IFEvent *event)
+{
+	OpnSearch *search;
+	List *l;
+
+	for (l = OPENNAP->searches; l; l = l->next) {
+		search = l->data;
+
+		if (search->event == event) {
+			search->event = NULL;
+			search_remove(search);
+		}
+	}
 }
 
 static int foreach_search_free(OpnSearch *search, void *udata)

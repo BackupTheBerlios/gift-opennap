@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_session.c,v 1.18 2003/08/13 09:20:13 tsauerbeck Exp $
+ * $Id: opn_session.c,v 1.19 2003/08/14 20:57:02 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -157,7 +157,7 @@ OpnSession *opn_session_find(OpnUrl *url)
 	assert(url);
 	
 	for (l = OPENNAP->sessions; l; l = l->next) {
-		session = (OpnSession *) l->data;
+		session = l->data;
 
 		if (session->node->ip == url->server.ip
 		    && session->node->port == url->server.port)
