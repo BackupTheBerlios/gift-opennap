@@ -167,7 +167,7 @@ static BOOL opennap_start(Protocol *p)
 	}
 
 	OPENNAP->nodelist = opn_nodelist_new();
-	opn_nodelist_load(OPENNAP->nodelist, OPN_LOCAL_MODE);
+	opn_nodelist_load(OPENNAP->nodelist, OPN_USE_NAPIGATOR);
 
 	return TRUE;
 }

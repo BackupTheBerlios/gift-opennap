@@ -8,6 +8,7 @@ The latest version can be found at
 http://developer.berlios.de/projects/gift-opennap
 currently.
 
+
 Status
 ======
 
@@ -18,6 +19,7 @@ Linux 2.4 on x86
 
 If you get it working on another system, please let me know.
 If you don't get it working on another system, let me know as well :)
+
 
 Installation
 ============
@@ -35,14 +37,18 @@ You'll also need to tell giFT you'd like to use this plugin:
 Open ~/.giFT/gift.conf and add "OpenNap" to the line that starts with
 plugins = ...
 
+
 Configuration
 =============
 
 See ~/.giFT/OpenNap/OpenNap.conf - it's quite well documented.
 If you're just getting started, the defaults will work well for you.
 
-If you want to use giFT OpenNap with a local server, enable
-local mode and put some IPs in ~/.giFT/OpenNap/nodelist.
+If you want to use giFT OpenNap with a local server, put some IPs
+in ~/.giFT/OpenNap/nodelist. Have a look at
+/usr/local/share/giFT/OpenNap/nodelist (path will vary if you didn't
+install giFT-OpenNap to /usr/local) to see how it should look like.
+
 
 Contact
 =======

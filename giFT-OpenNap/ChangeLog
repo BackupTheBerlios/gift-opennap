@@ -3,6 +3,9 @@
           fixed another big-endian bug
         * src/opn_download.[ch]: Updated so it compiles with recent
           libgiFT
+        * README, src/opn_node.[ch], src/opn_opennap.[ch]:
+          Updated nodelist loading. Local nodelist is now loaded in
+          any case but Napigator-querying can be disabled.
 
 2003-06-26 Tilman Sauerbeck <tilman@code-monkey.de>
         * Servers for local mode are now specified in

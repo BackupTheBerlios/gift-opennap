@@ -38,7 +38,7 @@ void opn_nodelist_free(OpnNodeList *nodelist);
 void opn_nodelist_node_add(OpnNodeList *nodelist, OpnNode *node);
 void opn_nodelist_node_remove(OpnNodeList *nodelist, OpnNode *node);
 
-void opn_nodelist_load(OpnNodeList *nodelist, BOOL local_mode);
+void opn_nodelist_load(OpnNodeList *nodelist, BOOL use_napigator);
 
 #endif
 

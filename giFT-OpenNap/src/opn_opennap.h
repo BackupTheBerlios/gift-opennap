@@ -69,8 +69,8 @@ extern Protocol *OPN;
 #define OPN_MAX_CONNECTIONS \
 	config_get_int(OPENNAP->cfg, "main/max_connections=15")
 
-#define OPN_LOCAL_MODE \
-	config_get_int(OPENNAP->cfg, "main/local_mode=0")
+#define OPN_USE_NAPIGATOR \
+	config_get_int(OPENNAP->cfg, "main/use_napigator=1")
 
 #define OPN_CLIENTNAME "giFT-OpenNap"
 #define OPN_HASH "OPN_MD5"

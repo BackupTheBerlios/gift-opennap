@@ -160,8 +160,6 @@ static void on_napigator_connect(int fd, input_id input, void *udata)
 
 static void nodelist_load_napigator(OpnNodeList *nodelist)
 {
-	assert(nodelist);
-
 	if (nodelist->con)
 		tcp_close(nodelist->con);
 
@@ -181,8 +179,6 @@ static void nodelist_load_local(OpnNodeList *nodelist)
 	char ip[16], *buf = NULL;
 	in_port_t port;
 
-	assert(nodelist);
-	
 	if (!(fp = fopen(file, "r")))
 		return;
 
@@ -194,12 +190,15 @@ static void nodelist_load_local(OpnNodeList *nodelist)
 	return;
 }
 
-void opn_nodelist_load(OpnNodeList *nodelist, BOOL local_mode)
+void opn_nodelist_load(OpnNodeList *nodelist, BOOL use_napigator)
 {
-	if (local_mode) {
-		nodelist_load_local(nodelist);
-		main_timer();
-	} else
+	assert(nodelist);
+
+	nodelist_load_local(nodelist);
+
+	if (use_napigator)
 		nodelist_load_napigator(nodelist);
+	else
+		main_timer();
 }
 
