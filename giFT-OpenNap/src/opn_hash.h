@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_hash.h,v 1.2 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_hash.h,v 1.3 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -21,7 +21,13 @@
 #ifndef __OPN_HASH_H
 #define __OPN_HASH_H
 
-uint8_t *opn_hash(char *file, size_t *len);
+#define OPN_HASH "MD5_300K"
+#define OPN_HASH_LEN 32
+
+uint8_t *opn_hash(const char *file, size_t *len);
+char *opn_hash_human(uint8_t *hash, size_t len);
+
+BOOL opn_hash_is_valid(char *hash);
 
 #endif
 

@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.h,v 1.9 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_packet.h,v 1.10 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -60,6 +60,8 @@ void opn_packet_free(OpnPacket *packet);
 void opn_packet_set_cmd(OpnPacket *packet, OpnCommand cmd);
 
 void opn_packet_put_str(OpnPacket *packet, char *str, BOOL quoted);
+void opn_packet_put_ustr(OpnPacket *packet, uint8_t *str, int len,
+                         BOOL quoted);
 void opn_packet_put_uint32(OpnPacket *packet, uint32_t val);
 void opn_packet_put_ip(OpnPacket *packet, in_addr_t ip);
 

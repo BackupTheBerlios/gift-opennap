@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_protocol_handlers.c,v 1.22 2003/08/13 09:20:13 tsauerbeck Exp $
+ * $Id: opn_protocol_handlers.c,v 1.23 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -23,6 +23,7 @@
 #include "opn_download.h"
 #include "opn_search.h"
 #include "opn_share.h"
+#include "opn_hash.h"
 #include "opn_utils.h"
 
 OPN_HANDLER(login_error)
@@ -114,11 +115,19 @@ OPN_HANDLER(search_result)
 	share_init(&share, path_nix);
 	share_set_root(&share, root, strlen(root));
 	share.size = filesize;
-	share_set_meta(&share, "Bitrate", bitrate);
-	share_set_meta(&share, "Frequency", freq);
-	share_set_meta(&share, "Duration", duration);
 
-	opn_url_set_file(url, path_orig, filesize);
+	if (opn_hash_is_valid(md5)) {
+		share_set_hash(&share, OPN_HASH, (uint8_t *) md5, OPN_HASH_LEN,
+		               FALSE);
+		opn_url_set_file(url, path_orig, filesize, md5);
+	} else
+		opn_url_set_file(url, path_orig, filesize, NULL);
+
+	share_set_meta(&share, "bitrate",
+	               stringf("%i", ATOI(bitrate) * 1000));
+	share_set_meta(&share, "frequency", freq);
+	share_set_meta(&share, "duration", duration);
+
 	opn_url_set_client(url, user, ip, 0);
 	opn_url_set_server(url, session->node->ip, session->node->port);
 
@@ -164,7 +173,7 @@ OPN_HANDLER(download_ack)
 	if (!(url = opn_url_new()))
 		return;
 	
-	opn_url_set_file(url, file, 0);
+	opn_url_set_file(url, file, 0, NULL);
 	opn_url_set_client(url, user, ip, port);
 
 	free(user);
@@ -231,7 +240,7 @@ OPN_HANDLER(queue_limit)
 	size = opn_packet_get_uint32(packet);
 
 	opn_url_set_client(url, user, 0, 0);
-	opn_url_set_file(url, file, size);
+	opn_url_set_file(url, file, size, NULL);
 
 	free(user);
 	free(file);

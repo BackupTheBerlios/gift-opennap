@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_url.c,v 1.11 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_url.c,v 1.12 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -40,6 +40,7 @@ void opn_url_free(OpnUrl *url)
 
 	free(url->user);
 	free(url->file);
+	free(url->hash);
 	free(url->serialized);
 	free(url);
 }
@@ -62,12 +63,14 @@ void opn_url_set_server(OpnUrl *url, in_addr_t ip, in_port_t port)
 	url->server.port = port;
 }
 
-void opn_url_set_file(OpnUrl *url, char *file, uint32_t size)
+void opn_url_set_file(OpnUrl *url, char *file, uint32_t size,
+                      char *hash)
 {
 	assert(url);
 
 	url->size = size;
 	url->file = STRDUP(file);
+	url->hash = STRDUP(hash);
 }
 
 
@@ -113,6 +116,14 @@ OpnUrl *opn_url_unserialize(char *data)
 	
 	url->size = strtoul(ptr2 + 5, NULL, 10);
 
+	/* get hash */
+	assert((ptr = strstr(data, "&hash=")));
+	assert((ptr2 = strstr(data, "&file=")));
+	ptr += 6;
+
+	url->hash = STRDUP_N(ptr, ++ptr2 - ptr);
+	
+	/* get filename */
 	assert((ptr = strstr(data, "&file=")));
 	ptr += 6;
 	
@@ -133,10 +144,10 @@ char *opn_url_serialize(OpnUrl *url)
 	client = stringf("%s", net_ip_str(url->client.ip));
 
 	url->serialized = stringf_dup("OpenNap://%s:%hu@%s:%hu?user=%s"
-	                              "&size=%u&file=%s",
+	                              "&size=%u&hash=%s&file=%s",
 	                              client, url->client.port,
 	                              net_ip_str(url->server.ip), url->server.port,
-	                              user, url->size, file);
+	                              user, url->size, url->hash, file);
 
 	free(user);
 	free(file);

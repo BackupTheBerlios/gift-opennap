@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_share.c,v 1.10 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_share.c,v 1.11 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -55,7 +55,7 @@ void opn_share_refresh(OpnSession *session)
 	Share *share;
 	Hash *hash;
 	List *l;
-	char *bitrate, *freq, *len;
+	uint32_t bitrate, freq, dur;
 
 	assert(session);
 	assert(session->node);
@@ -72,17 +72,16 @@ void opn_share_refresh(OpnSession *session)
 
 		opn_packet_set_cmd(packet, OPN_CMD_SHARE_ADD);
 
-		bitrate = share_get_meta(share, "Bitrate");
-		freq = share_get_meta(share, "Frequency");
-		len = share_get_meta(share, "Length");
+		bitrate = ATOUL(share_get_meta(share, "bitrate")) / 1000;
+		freq = ATOUL(share_get_meta(share, "frequency"));
+		dur = ATOUL(share_get_meta(share, "duration"));
 
 		opn_packet_put_str(packet, share_get_hpath(share), TRUE);
-		opn_packet_put_str(packet, (char *) hash->data, FALSE);
+		opn_packet_put_ustr(packet, hash->data, OPN_HASH_LEN, FALSE);
 		opn_packet_put_uint32(packet, share->size);
-		opn_packet_put_str(packet, bitrate ? bitrate : "0", FALSE);
-		opn_packet_put_str(packet, freq ? freq : "0", FALSE);
-		opn_packet_put_str(packet, bitrate ? freq : "0", FALSE);
-		opn_packet_put_str(packet, len ? len : "0", FALSE);
+		opn_packet_put_uint32(packet, bitrate);
+		opn_packet_put_uint32(packet, freq);
+		opn_packet_put_uint32(packet, dur);
 		
 		opn_packet_send(packet, session);
 		opn_packet_free(packet);

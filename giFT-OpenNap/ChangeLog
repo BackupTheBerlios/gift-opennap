@@ -1,4 +1,12 @@
-$Id: ChangeLog,v 1.29 2003/08/12 14:49:03 tsauerbeck Exp $
+$Id: ChangeLog,v 1.30 2003/08/14 20:19:51 tsauerbeck Exp $
+
+2003-08-14 Tilman Sauerbeck <tilman@code-monkey.de>
+        * src/opn_share.c: Meta data is submitted correctly now
+        * src/opn_url.c, src/opn_url.h: The file's hash is now stored
+          in the URL, too.
+        * src/opn_opennap.c: Implemented p->source_cmp()
+        * src/opn_packet.c, src/opn_packet.h:
+          Added opn_packet_put_ustr()
 
 2003-08-12 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_packet.c, src/opn_session.c:

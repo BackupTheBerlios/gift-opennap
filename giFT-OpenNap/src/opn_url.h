@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_url.h,v 1.5 2003/08/05 07:51:37 tsauerbeck Exp $
+ * $Id: opn_url.h,v 1.6 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -35,6 +35,7 @@ typedef struct {
 	char *user; /**< The user who shares this file */
 	char *file; /**< Full path of the file. Can be DOS or Unix-style */
 	uint32_t size; /**< Filesize */
+	char *hash; /**< Human representation of the file's hash */
 
 	char *serialized;
 } OpnUrl;
@@ -42,7 +43,9 @@ typedef struct {
 OpnUrl *opn_url_new();
 void opn_url_free(OpnUrl *url);
 
-void opn_url_set_file(OpnUrl *url, char *file, uint32_t size);
+void opn_url_set_file(OpnUrl *url, char *file, uint32_t size,
+                      char *hash);
+
 void opn_url_set_client(OpnUrl *url, char *user, in_addr_t ip,
                              in_port_t port);
 

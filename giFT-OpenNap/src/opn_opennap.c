@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.c,v 1.25 2003/08/13 09:20:13 tsauerbeck Exp $
+ * $Id: opn_opennap.c,v 1.26 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -111,6 +111,27 @@ static int opennap_stats(Protocol *p, unsigned long *users,
 	return i;
 }
 
+static int opennap_source_cmp(Protocol *p, Source *src_a, Source *src_b)
+{
+	OpnUrl *a = opn_url_unserialize(src_a->url);
+	OpnUrl *b = opn_url_unserialize(src_b->url);
+	int res;
+
+	if ((res = INTCMP(a->client.ip, b->client.ip)))
+		return res;
+
+	if ((res = INTCMP(a->client.port, b->client.port)))
+		return res;
+	
+	if ((res = INTCMP(a->size, b->size)))
+		return res;
+
+	if (a->hash[0] && b->hash[0]) 
+		res = strcasecmp(a->hash, b->hash);
+	
+	return res;
+}
+
 /**
  * Creates a random username
  *
@@ -178,8 +199,8 @@ static void opennap_destroy(Protocol *p)
 
 static void setup_callbacks(Protocol *p)
 {
-	p->hash_handler(p, OPN_HASH, HASH_PRIMARY,
-	                (HashFn) opn_hash, (HashDspFn) STRDUP);
+	p->hash_handler(p, OPN_HASH, HASH_PRIMARY, (HashFn) opn_hash,
+	                (HashDspFn) opn_hash_human);
 	
 	p->start = opennap_start;
 	p->destroy = opennap_destroy;
@@ -193,6 +214,8 @@ static void setup_callbacks(Protocol *p)
 	p->chunk_resume = opennap_chunk_resume;
 	
 	p->upload_stop = opennap_upload_stop;
+
+	p->source_cmp = opennap_source_cmp;
 
 	p->share_sync = opennap_share_sync;
 	p->share_add = opennap_share_add;

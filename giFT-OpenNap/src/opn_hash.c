@@ -1,5 +1,5 @@
 /*
- * $Id: opn_hash.c,v 1.4 2003/08/10 14:10:28 tsauerbeck Exp $
+ * $Id: opn_hash.c,v 1.5 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * This code implements the MD5 message-digest algorithm.
  * The algorithm is due to Ron Rivest.  This code was
@@ -18,6 +18,8 @@
  */
 
 #include "opn_opennap.h"
+#include <ctype.h>
+#include "opn_hash.h"
 
 typedef struct {
 	uint32_t buf[4];
@@ -267,15 +269,13 @@ static char *hash_human(uint8_t *hash)
 
 	assert(hash);
 	
-	if (!(human = malloc(33)))
+	if (!(human = malloc(OPN_HASH_LEN)))
 		return NULL;
 
 	for (i = 0; i < 16; i++) {
 		human[2 * i] = hex[hash[i] >> 4];
 		human[2 * i + 1] = hex[hash[i] & 0x0f];
 	}
-
-	human[32] = 0;
 
 	return human;
 }
@@ -293,12 +293,12 @@ uint8_t *opn_hash(const char *file, size_t *len)
 	int fd;
 	ssize_t bytes;
 	size_t left = 299008; /* we hash 299008 bytes at most */
-	uint8_t buf[1024], hash[16];
+	uint8_t buf[1024], hash[OPN_HASH_LEN / 2];
 	
 	assert(file);
 	assert(len);
 
-	*len = 33;
+	*len = OPN_HASH_LEN;
 
 	if (stat(file, &st) < 0)
 		return NULL;
@@ -320,5 +320,32 @@ uint8_t *opn_hash(const char *file, size_t *len)
 	md5_final(hash, &ctx);
 	
 	return (uint8_t *) hash_human(hash);
+}
+
+char *opn_hash_human(uint8_t *hash, size_t len)
+{
+	char *human;
+
+	if (!(human = malloc(len + 1)))
+		return NULL;
+
+	memcpy(human, hash, len);
+	human[len] = 0;
+
+	return human;
+}
+
+BOOL opn_hash_is_valid(char *hash)
+{
+	int i;
+
+	if (STRLEN(hash) != OPN_HASH_LEN)
+		return FALSE;
+	
+	for (i = 0; i < OPN_HASH_LEN; i++)
+		if (hash[i] != '0' && isalnum(hash[i]))
+			return TRUE;
+
+	return FALSE;
 }
 

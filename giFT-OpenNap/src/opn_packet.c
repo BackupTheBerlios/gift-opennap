@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_packet.c,v 1.15 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_packet.c,v 1.16 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -65,16 +65,30 @@ void opn_packet_set_cmd(OpnPacket *packet, OpnCommand cmd)
 	packet->cmd = cmd;
 }
 
-void opn_packet_put_str(OpnPacket *packet, char *str, BOOL quoted)
+void opn_packet_put_ustr(OpnPacket *packet, uint8_t *str, int len,
+                         BOOL quoted)
 {
-	char *fmt;
-	BOOL first = (!packet->data->len);
-	
 	assert(packet);
 	assert(str);
 
-	fmt = stringf("%s%s", first ? "" : " ", quoted ? "\"%s\"" : "%s");
-	string_appendf(packet->data, fmt, str);
+	if (len == -1)
+		len = strlen((char *) str);
+	
+	if (packet->data->len)
+		string_appendc(packet->data, ' ');
+
+	if (quoted)
+		string_appendc(packet->data, '"');
+
+	string_appendu(packet->data, (uint8_t *) str, len);
+	
+	if (quoted)
+		string_appendc(packet->data, '"');
+}
+
+void opn_packet_put_str(OpnPacket *packet, char *str, BOOL quoted)
+{
+	opn_packet_put_ustr(packet, (uint8_t *) str, -1, quoted);
 }
 
 void opn_packet_put_uint32(OpnPacket *packet, uint32_t val)

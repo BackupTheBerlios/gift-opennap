@@ -1,6 +1,6 @@
 /* giFT OpenNap
  *
- * $Id: opn_opennap.h,v 1.16 2003/08/12 14:49:03 tsauerbeck Exp $
+ * $Id: opn_opennap.h,v 1.17 2003/08/14 20:19:51 tsauerbeck Exp $
  * 
  * Copyright (C) 2003 Tilman Sauerbeck <tilman@code-monkey.de>
  *
@@ -79,7 +79,6 @@ extern Protocol *OPN;
 	config_get_str(OPENNAP->cfg, "main/napigator_ip=216.116.119.192")
 
 #define OPN_CLIENTNAME "giFT-OpenNap"
-#define OPN_HASH "MD5_300K"
 
 #define OPN_MSG_FILENOTSHARED "FILE NOT SHARED"
 #define OPN_MSG_INVALIDREQUEST "INVALID REQUEST"
