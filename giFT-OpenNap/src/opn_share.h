@@ -18,10 +18,10 @@
 #ifndef __OPN_SHARE_H
 #define __OPN_SHARE_H
 
-void gift_cb_share_sync(Protocol *p, BOOL begin);
-BOOL gift_cb_share_add(Protocol *p, Share *file, void *udata);
-BOOL gift_cb_share_remove(Protocol *p, Share *file, void *udata);
-void gift_cb_share_hide(Protocol *p);
+void opennap_share_sync(Protocol *p, BOOL begin);
+BOOL opennap_share_add(Protocol *p, Share *file, void *udata);
+BOOL opennap_share_remove(Protocol *p, Share *file, void *udata);
+void opennap_share_hide(Protocol *p);
 
 BOOL opn_share_syncing();
 BOOL opn_share_enabled();

@@ -77,7 +77,7 @@ void main_timer()
 	                                   NULL);
 }
 
-static int gift_cb_stats(Protocol *p, unsigned long *users,
+static int opennap_stats(Protocol *p, unsigned long *users,
                          unsigned long *files, double *size,
                          Dataset **extra)
 {
@@ -140,7 +140,7 @@ static void set_username(char buf[16])
 	buf[i] = 0;
 }
 
-static BOOL gift_cb_start(Protocol *p)
+static BOOL opennap_start(Protocol *p)
 {
 	char alias[16];
 	
@@ -176,7 +176,7 @@ static BOOL gift_cb_start(Protocol *p)
 	return TRUE;
 }
 
-static void gift_cb_destroy(Protocol *p)
+static void opennap_destroy(Protocol *p)
 {
 	if (!OPENNAP)
 		return;
@@ -209,21 +209,23 @@ static void setup_callbacks(Protocol *p)
 	p->hash_handler(p, OPENNAP_HASH, HASH_PRIMARY,
 	                (HashFn) opn_hash, (HashDspFn) STRDUP);
 	
-	p->start = gift_cb_start;
-	p->destroy = gift_cb_destroy;
+	p->start = opennap_start;
+	p->destroy = opennap_destroy;
 
-	p->search = gift_cb_search;
+	p->search = opennap_search;
 
-	p->download_start = gift_cb_download_start;
-	p->download_stop = gift_cb_download_stop;
-	p->source_remove = gift_cb_source_remove;
+	p->download_start = opennap_download_start;
+	p->download_stop = opennap_download_stop;
+	p->source_remove = opennap_source_remove;
+	p->chunk_suspend = opennap_chunk_suspend;
+	p->chunk_resume = opennap_chunk_resume;
 
-	p->share_sync = gift_cb_share_sync;
-	p->share_add = gift_cb_share_add;
-	p->share_remove = gift_cb_share_remove;
-	p->share_hide = gift_cb_share_hide;
+	p->share_sync = opennap_share_sync;
+	p->share_add = opennap_share_add;
+	p->share_remove = opennap_share_remove;
+	p->share_hide = opennap_share_hide;
 
-	p->stats = gift_cb_stats;
+	p->stats = opennap_stats;
 }
 
 BOOL OpenNap_init(Protocol *p)

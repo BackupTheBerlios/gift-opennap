@@ -2,6 +2,8 @@
         * src/opn_search.[ch], src/opn_protocol_handlers.c:
           Add search results to _all_ searches they might belong too
           instead of just adding them to the first one
+        * Changed to callback names from gift_cb_* to opennap_*
+        * src/opn_download.[ch]: Various OpnDownload fixes.
 
 2003-06-21 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_packet.[ch]: Removed opn_packet_set_data(),

@@ -160,8 +160,6 @@ OPN_HANDLER(search_result)
 
 OPN_HANDLER(search_finished)
 {
-	OpnSearch *search;
-
 	if (!OPENNAP->searches)
 		return;
 

@@ -118,7 +118,7 @@ void share_remove()
  * @param begin TRUE if share's are currently synced.
  *              FALSE if syncing shares has been finished.
  */
-void gift_cb_share_sync(Protocol *p, BOOL begin)
+void opennap_share_sync(Protocol *p, BOOL begin)
 {
 	List *l;
 
@@ -141,7 +141,7 @@ void gift_cb_share_sync(Protocol *p, BOOL begin)
  * @param share
  * @param udata Protocol-specific data associated with \em share
  */
-BOOL gift_cb_share_add(Protocol *p, Share *share, void *udata)
+BOOL opennap_share_add(Protocol *p, Share *share, void *udata)
 {
 	OPENNAP->shares = list_prepend(OPENNAP->shares, share);
 	share_ref(share);
@@ -156,7 +156,7 @@ BOOL gift_cb_share_add(Protocol *p, Share *share, void *udata)
  * @param share
  * @param udata Protocol-specific data associated with \em share
  */
-BOOL gift_cb_share_remove(Protocol *p, Share *share, void *udata)
+BOOL opennap_share_remove(Protocol *p, Share *share, void *udata)
 {
 	OPENNAP->shares = list_remove(OPENNAP->shares, share);
 	share_unref(share);
@@ -169,7 +169,7 @@ BOOL gift_cb_share_remove(Protocol *p, Share *share, void *udata)
  *
  * @param p
  */
-void gift_cb_share_hide(Protocol *p)
+void opennap_share_hide(Protocol *p)
 {
 	List *l;
 
@@ -185,7 +185,7 @@ void gift_cb_share_hide(Protocol *p)
  *
  * @param p
  */
-void gift_cb_share_show(Protocol *p)
+void opennap_share_show(Protocol *p)
 {
 	List *l;
 

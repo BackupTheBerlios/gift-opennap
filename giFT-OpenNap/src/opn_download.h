@@ -24,9 +24,16 @@ typedef struct {
 	Chunk *chunk;
 } OpnDownload;
 
-BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Source *source);
-void gift_cb_download_stop(Protocol *p, Transfer *transfer, Chunk *chunk, Source *source, int complete);
-int gift_cb_source_remove(Protocol *p, Transfer *transfer, Source *source);
+BOOL opennap_download_start(Protocol *p, Transfer *transfer,
+                            Chunk *chunk, Source *source);
+void opennap_download_stop(Protocol *p, Transfer *transfer,
+                           Chunk *chunk, Source *source, int complete);
+int opennap_source_remove(Protocol *p, Transfer *transfer,
+                          Source *source);
+BOOL opennap_chunk_suspend(Protocol *p, Transfer *transfer,
+                           Chunk *chunk, Source *source);
+BOOL opennap_chunk_resume(Protocol *p, Transfer *transfer,
+                          Chunk *chunk, Source *source);
 
 OpnDownload *opn_download_new();
 OpnDownload *opn_download_find(OpnUrl *url);

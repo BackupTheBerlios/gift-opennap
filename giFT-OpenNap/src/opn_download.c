@@ -19,7 +19,29 @@
 #include "opn_opennap.h"
 #include "opn_download.h"
 
-BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Source *source)
+/**
+ * Finds the OpnDownload \em chunk belongs to
+ *
+ * @param chunk
+ * @return The found OpnDownload object or NULL
+ */
+static OpnDownload *download_find_by_chunk(Chunk *chunk)
+{
+	OpnDownload *download;
+	List *l;
+	
+	/* find the OpnDownload object @chunk belongs to */
+	for (l = OPENNAP->downloads; l; l = l->next) {
+		download = (OpnDownload *) l->data;
+
+		if (download->chunk == chunk)
+			return download;
+	}
+
+	return NULL;
+}
+
+BOOL opennap_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Source *source)
 {
 	OpnDownload *download;
 	OpnSession *session;
@@ -36,8 +58,6 @@ BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 		opn_download_free(download);
 		return FALSE;
 	}
-
-	OPENNAP->downloads = list_prepend(OPENNAP->downloads, download);
 	
 	if (!(packet = opn_packet_new()))
 		return FALSE;
@@ -53,14 +73,45 @@ BOOL gift_cb_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 	return ret;
 }
 
-int gift_cb_source_remove(Protocol *p, Transfer *transfer, Source *source)
+int opennap_source_remove(Protocol *p, Transfer *t, Source *s)
 {
 	return 0;
 }
 
-void gift_cb_download_stop(Protocol *p, Transfer *transfer, Chunk *chunk, Source *source, int complete)
+void opennap_download_stop(Protocol *p, Transfer *transfer,
+                           Chunk *chunk, Source *source, int complete)
 {
-	assert(OPENNAP->downloads);
+	opn_download_free(download_find_by_chunk(chunk));
+}
+
+BOOL opennap_chunk_suspend(Protocol *p, Transfer *transfer,
+                           Chunk *chunk, Source *source)
+{
+	OpnDownload *download;
+
+	if (!(download = download_find_by_chunk(chunk)))
+		return FALSE;
+	else {
+		assert(download->con);
+		input_suspend_all(download->con->fd);
+
+		return TRUE;
+	}
+}
+
+BOOL opennap_chunk_resume(Protocol *p, Transfer *transfer,
+                          Chunk *chunk, Source *source)
+{
+	OpnDownload *download;
+
+	if (!(download = download_find_by_chunk(chunk)))
+		return FALSE;
+	else {
+		assert(download->con);
+		input_resume_all(download->con->fd);
+		
+		return TRUE;
+	}
 }
 
 OpnDownload *opn_download_new()
@@ -72,6 +123,8 @@ OpnDownload *opn_download_new()
 
 	memset(dl, 0, sizeof(OpnDownload));
 
+	OPENNAP->downloads = list_prepend(OPENNAP->downloads, dl);
+
 	return dl;
 }
 
@@ -80,12 +133,10 @@ void opn_download_free(OpnDownload *dl)
 	if (!dl)
 		return;
 
+	OPENNAP->downloads = list_remove(OPENNAP->downloads, dl);
+
 	if (dl->con)
 		tcp_close(dl->con);
-
-	if (dl->chunk && dl->chunk->source)
-		OPN->source_status(OPN, dl->chunk->source,
-		                   SOURCE_CANCELLED, "Cancelled");
 
 	opn_url_free(dl->url);
 	free(dl);
@@ -95,27 +146,39 @@ static void on_download_read_data(int fd, input_id input, void *udata)
 {
 	OpnDownload *download = (OpnDownload *) udata;
 	uint8_t buf[RW_BUFFER];
-	int bytes;
+	size_t size = sizeof(buf);
+	int recvd;
 
-	if (net_sock_error(fd) || (bytes = tcp_recv(download->con, buf,
-	                                            sizeof(buf))) <= 0) {
+	if (net_sock_error(fd)) {
 		opn_download_free(download);
 		return;
 	}
 
-	OPN->source_status(OPN, download->chunk->source, SOURCE_ACTIVE,
-	                   "Active");
+#if 0
+	/* Ask giFT for the max size we should read.  If this returns 0, the
+	 * download was suspended.
+	 */
+	if (!(size = download_throttle(download->chunk, sizeof(buf))))
+		return;
+#endif
+
+	if ((recvd = tcp_recv(download->con, buf, size)) <= 0) {
+		OPN->source_status(OPN, download->chunk->source,
+		                   SOURCE_CANCELLED, "Error");
+		opn_download_free(download);
+		return;
+	}
 
 	OPN->chunk_write(OPN, download->chunk->transfer,
 	                 download->chunk, download->chunk->source,
-	                 buf, bytes);
+	                 buf, recvd);
 }
 
 static void on_download_read_filesize(int fd, input_id input, void *udata)
 {
 	OpnDownload *download = (OpnDownload *) udata;
 	uint8_t buf[128];
-	int bytes, i;
+	int recvd, i;
 	uint32_t size = 0;
 
 	if (net_sock_error(fd)) {
@@ -126,12 +189,12 @@ static void on_download_read_filesize(int fd, input_id input, void *udata)
 	input_remove(input);
 
 	/* get the filesize */
-	if ((bytes = tcp_peek(download->con, buf, sizeof(buf))) <= 0) {
+	if ((recvd = tcp_peek(download->con, buf, sizeof(buf))) <= 0) {
 		opn_download_free(download);
 		return;
 	}
 
-	buf[bytes] = 0;
+	buf[recvd] = 0;
 
 	for (i = 0; isdigit(buf[i]) && size < download->url->size; i++)
 		size = (size * 10) + (buf[i] - '0');
