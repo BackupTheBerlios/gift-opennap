@@ -29,8 +29,13 @@ OpnUrl *opn_url_new()
 	return url;
 }
 
-void opn_url_set_client_data(OpnUrl *url, char *user, in_addr_t ip,
-                             in_port_t port)
+void opn_url_free(OpnUrl *url)
+{
+	free(url);
+}
+
+void opn_url_set_client(OpnUrl *url, char *user, in_addr_t ip,
+                        in_port_t port)
 {
 	assert(url);
 
@@ -39,7 +44,7 @@ void opn_url_set_client_data(OpnUrl *url, char *user, in_addr_t ip,
 	snprintf(url->user, sizeof(url->user), "%s", user);
 }
 
-void opn_url_set_server_data(OpnUrl *url, in_addr_t ip, in_port_t port)
+void opn_url_set_server(OpnUrl *url, in_addr_t ip, in_port_t port)
 {
 	assert(url);
 
@@ -47,7 +52,7 @@ void opn_url_set_server_data(OpnUrl *url, in_addr_t ip, in_port_t port)
 	url->server.port = port;
 }
 
-void opn_url_set_file_data(OpnUrl *url, char *file, uint32_t size)
+void opn_url_set_file(OpnUrl *url, char *file, uint32_t size)
 {
 	assert(url);
 
@@ -58,17 +63,25 @@ void opn_url_set_file_data(OpnUrl *url, char *file, uint32_t size)
 OpnUrl *opn_url_unserialize(char *data)
 {
 	OpnUrl *url;
+	char *ptr, *ptr2;
 
 	assert(data);
 
-	if (!(url = malloc(sizeof(OpnUrl))))
+	if (!(url = opn_url_new()))
 		return NULL;
 
-	memset(url, 0, sizeof(OpnUrl));
+	sscanf(data, "OpenNap://%u:%hu@%u:%hu",
+	       &url->client.ip, &url->client.port,
+	       &url->server.ip, &url->server.port);
 
-	sscanf(data, "%u:%hu\n%u:%hu\n%s\n%s\n%u", &url->server.ip,
-	       &url->server.port, &url->client.ip, &url->client.port,
-	       url->user, url->file, &url->size);
+	ptr = strstr(data, "user=") + 5;
+	ptr2 = strstr(data, "&size=") + 1;
+
+	snprintf(url->user, ptr2 - ptr, ptr);
+	url->size = strtoul(ptr2 + 5, NULL, 10);
+
+	ptr = strstr(data, "&file=") + 6;
+	snprintf(url->file, sizeof(url->file), ptr);
 
 	return url;
 }
@@ -78,15 +91,11 @@ char *opn_url_serialize(OpnUrl *url)
 	assert(url);
 
 	snprintf(url->serialized, sizeof(url->serialized),
-	         "%u:%hu\n%u:%hu\n%s\n%s\n%u",
-	         url->server.ip, url->server.port, url->client.ip,
-	         url->client.port, url->user, url->file, url->size);
+	         "OpenNap://%u:%hu@%u:%hu?user=%s&size=%u&file=%s",
+	         url->client.ip, url->client.port,
+	         url->server.ip, url->server.port,
+	         url->user, url->size, url->file);
 
 	return url->serialized;
-}
-
-void opn_url_free(OpnUrl *url)
-{
-	free(url);
 }
 
