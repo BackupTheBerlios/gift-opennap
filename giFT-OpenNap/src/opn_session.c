@@ -101,7 +101,8 @@ void opn_session_free(OpnSession *session)
 	if (session->con)
 		tcp_close(session->con);
 
-	session->node->connected = FALSE;
+	if (session->node)
+		session->node->connected = FALSE;
 
 	free(session);
 }
