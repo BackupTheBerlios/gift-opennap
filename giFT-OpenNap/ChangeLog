@@ -1,5 +1,7 @@
 2003-06-23 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_url.c: IPs are saved in dotted notation now
+        * src/opn_protocol_handlers.c: Fixed some potential mem leaks.
+        * src/opn_packet.c: Fixed a bug causing segfaults.
 
 2003-06-22 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_search.[ch], src/opn_protocol_handlers.c:

@@ -114,22 +114,36 @@ OPN_HANDLER(search_result)
 	uint32_t ip, filesize;
 
 	assert(session);
+	assert(packet->data);
+	assert(packet->data->str);
 
 	if (!(url = opn_url_new()))
 		return;
 
-	path_orig = opn_packet_get_str(packet, TRUE);
+	if (!(path_orig = opn_packet_get_str(packet, TRUE))) {
+		opn_url_free(url);
+		return;
+	}
+	
 	md5 = opn_packet_get_str(packet, FALSE);
 	filesize = opn_packet_get_uint32(packet);
 	bitrate = opn_packet_get_str(packet, FALSE);
 	freq = opn_packet_get_str(packet, FALSE);
 	len = opn_packet_get_str(packet, FALSE);
-	user = opn_packet_get_str(packet, FALSE);
-	ip = opn_packet_get_ip(packet);
-
-	if (!user)
+	
+	if (!(user = opn_packet_get_str(packet, FALSE))) {
+		free(path_orig);
+		free(md5);
+		free(bitrate);
+		free(freq);
+		free(len);
+		free(md5);
+		opn_url_free(url);
+		
 		return;
-
+	}
+	
+	ip = opn_packet_get_ip(packet);
 	path_nix = my_file_unix_path(path_orig);
 	root = file_dirname(path_nix);
 

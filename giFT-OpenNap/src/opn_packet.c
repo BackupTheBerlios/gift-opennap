@@ -118,8 +118,11 @@ char *opn_packet_get_str(OpnPacket *packet, BOOL quoted)
 
 	if (quoted) {
 		/* string is delimited by quotes */
-		start = strchr(packet->read, '"') + 1;
-		end = strchr(start, '"');
+		if (!(start = strchr(packet->read, '"')))
+			return NULL;
+		
+		if (!(end = strchr(++start, '"')))
+			return NULL;
 	} else {
 		/* string is delimited by spaces */
 		start = packet->read;
