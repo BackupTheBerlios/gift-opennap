@@ -19,8 +19,10 @@
 #define __OPN_UPLOAD_H
 
 typedef struct {
+	FILE *fp;
 	TCPC *con;
 	Transfer *transfer;
+	Chunk *chunk;
 } OpnUpload;
 
 OpnUpload *opn_upload_new();

@@ -39,41 +39,69 @@ void opn_upload_free(OpnUpload *upload)
 	if (upload->con)
 		tcp_close(upload->con);
 
+	if (upload->fp)
+		fclose(upload->fp);
+
 	free(upload);
 }
 
-#if 0
 static void on_upload_write(int fd, input_id input, void *udata)
 {
 	OpnUpload *upload = (OpnUpload *) udata;
 	uint8_t buf[RW_BUFFER];
-	size_t size;
+	size_t size = sizeof(buf), read, sent;
+	off_t remains;
 
-	/*
-	 * if (!(size = upload_throttle(transfer->chunk, sizeof(buf))))
-	 * return;
-	 */
+#if 0
+	if (!(size = upload_throttle(transfer->chunk, sizeof(buf))))
+		return;
+#endif
 
+	remains = upload->chunk->stop -
+	          (upload->chunk->start + upload->chunk->transmit);
+
+	if (remains <= 0) {
+		tcp_close(upload->con);
+		OPN->chunk_write(OPN, upload->transfer, upload->chunk,
+		                 upload->chunk->source, NULL, 0);
+		return;
+	}
+
+	if (!(read = fread(buf, 1, size, upload->fp))) {
+		tcp_close(upload->con);
+		return;
+	}
+
+	sent = tcp_send(upload->con, buf, MIN(remains, read));
+
+	if (sent <= 0) {
+		tcp_close(upload->con);
+		return;
+	}
+
+	OPN->chunk_write(OPN, upload->transfer, upload->chunk,
+	                 upload->chunk->source, buf, sent);
 }
 
 static void opn_upload_start(char *user, Share *share, uint32_t offset,
                              TCPC *con)
 {
 	OpnUpload *upload;
-	Transfer *transfer;
+	char *path = file_host_path(share->path);
 
 	if (!(upload = opn_upload_new()))
 		return;
-
-	upload->transfer = upload_new(opn_proto, user, OPENNAP_HASH, NULL,
-	                              file_basename(share->path),
-	                              share->path, (off_t) offset,
-	                              (off_t) share->size - offset, TRUE, TRUE);
+	
+	upload->transfer = OPN->upload_start(OPN, &upload->chunk,
+	                                     user, share, offset,
+	                                     share->size - offset);
 
 	upload->con = con;
+	upload->fp = fopen(path, "rb");
 	
 	input_add(con->fd, upload, INPUT_WRITE,
 	          on_upload_write, TIMEOUT_DEF);
+	free(path);
 }
 
 static void on_upload_read(int fd, input_id input, void *udata)
@@ -83,7 +111,7 @@ static void on_upload_read(int fd, input_id input, void *udata)
 	uint8_t buf[PATH_MAX + 256];
 	int bytes;
 	uint32_t offset;
-	char file[PATH_MAX + 1], user[64];
+	char file[PATH_MAX + 1], user[64], fmt[32];
 	
 	if (net_sock_error(fd)) {
 		tcp_close(con);
@@ -100,14 +128,18 @@ static void on_upload_read(int fd, input_id input, void *udata)
 
 	input_remove(input);
 
-	sscanf(buf, "%64s \"%PATH_MAXs\" %lu", user, file, &offset);
+	snprintf(fmt, sizeof(fmt), "%%%is \"%%%is[^\"]\" %%lu",
+	         sizeof(user) - 1, PATH_MAX);
+	sscanf(buf, fmt, user, file, &offset);
 	
-	if (!(share = share_find_file(file))) {
+	if (!(share = OPN->share_lookup(OPN, SHARE_LOOKUP_PATH, file))) {
 		tcp_close(con);
 		return;
 	}
 
-	opn_download_start(user, share, offset, con);
+	if (OPN->upload_auth(OPN, net_ip_str(con->host),
+	    share, NULL) == UPLOAD_AUTH_ALLOW)
+		opn_download_start(user, share, offset, con);
 }
 
 void opn_upload_connect(int fd, input_id input, void *udata)
@@ -121,5 +153,4 @@ void opn_upload_connect(int fd, input_id input, void *udata)
 
 	input_add(fd, con, INPUT_READ, on_upload_read, TIMEOUT_DEF);
 }
-#endif
 

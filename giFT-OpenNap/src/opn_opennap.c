@@ -60,7 +60,8 @@ static BOOL opn_connect(void *udata)
 			OPENNAP->sessions = list_prepend(OPENNAP->sessions, session);
 			
 			if (!opn_session_connect(session, node)) {
-				OPENNAP->sessions = list_remove(OPENNAP->sessions, session);
+				OPENNAP->sessions = list_remove(OPENNAP->sessions,
+				                                session);
 				opn_session_free(session);
 			}
 		}
@@ -225,7 +226,7 @@ BOOL OpenNap_init(Protocol *p)
 {
 	OpnPlugin *plugin;
 	
-	if (protocol_compat(LIBGIFTPROTO_VERSION))
+	if (protocol_compat(p, LIBGIFTPROTO_VERSION))
 		return FALSE;
 
 	/* tell our debugger to insert a breakpoint here

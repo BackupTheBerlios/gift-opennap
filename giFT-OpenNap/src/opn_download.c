@@ -88,6 +88,8 @@ BOOL opennap_download_start(Protocol *p, Transfer *transfer, Chunk *chunk, Sourc
 	download->chunk = chunk;
 	download->url = opn_url_unserialize(source->url);
 
+	assert(download->url->size == source->size);
+
 	if (!(session = opn_session_find(download->url))) {
 		opn_download_free(download);
 		return FALSE;
