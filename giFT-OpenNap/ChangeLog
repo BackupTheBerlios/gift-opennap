@@ -4,6 +4,8 @@
         * src/opn_search.[ch]: Improved query/exclude handling
         * src/opn_packet.[ch]: Separated opn_packet_set_data()
         * src/opn_session.c: Fixed segfault in opn_session_free()
+        * data/OpenNap.conf, src/opn_opennap.[ch], src/opn_node.c:
+          Added "local mode"
         * Code cleanup
 
 2003-06-16 Tilman Sauerbeck <tilman@code-monkey.de>

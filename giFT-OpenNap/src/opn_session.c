@@ -39,7 +39,7 @@ static void session_login(OpnSession *session)
 
 	snprintf(buf, sizeof(buf), "%s none %hu \""
 	         OPENNAP_CLIENTNAME " " VERSION "\" 0",
-	         OPENNAP_USERNAME, OPENNAP_DATAPORT);
+	         OPENNAP_ALIAS, OPENNAP_DATAPORT);
 	
 	if (!(packet = opn_packet_new(OPN_CMD_LOGIN))
 	    || !opn_packet_set_data(packet, buf))

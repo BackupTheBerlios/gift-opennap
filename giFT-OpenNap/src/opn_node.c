@@ -164,6 +164,17 @@ void opn_nodelist_refresh(OpnNodeList *nodelist)
 {
 	assert(nodelist);
 
+	/* if we are in local mode, just add the server specified
+	 * in OpenNap.conf
+	 */
+	if (OPENNAP_LOCAL_MODE) {
+		opn_nodelist_node_add(nodelist,
+		                      opn_node_new(net_ip(OPENNAP_LOCAL_IP),
+		                                   OPENNAP_LOCAL_PORT));
+		main_timer();
+		return;
+	}
+
 	if (nodelist->con)
 		tcp_close(nodelist->con);
 

@@ -52,9 +52,10 @@ void opn_share_refresh(OpnSession *session)
 	Share *share;
 	Hash *hash;
 	List *l;
-	char buf[PATH_MAX + 128];
+	char buf[PATH_MAX + 128], *bitrate, *freq, *len;
 
 	assert(session);
+	assert(session->node);
 
 	if (!session->node->connected)
 		return;
@@ -66,11 +67,14 @@ void opn_share_refresh(OpnSession *session)
 		if (!(packet = opn_packet_new(OPN_CMD_SHARE_ADD)))
 			continue;
 
+		bitrate = share_get_meta(share, "Bitrate");
+		freq = share_get_meta(share, "Frequency");
+		len = share_get_meta(share, "Length");
+
 		snprintf(buf, sizeof(buf), "\"%s\" %s %lu %s %s %s",
 				share->path, hash->data, share->size,
-				STRING_NOTNULL(share_get_meta(share, "Bitrate")),
-				STRING_NOTNULL(share_get_meta(share, "Frequency")),
-				STRING_NOTNULL(share_get_meta(share, "Length")));
+				bitrate ? bitrate : "0", freq ? freq : "0",
+				len ? len : "0");
 
 		opn_packet_set_data(packet, buf);
 		opn_packet_send(packet, session->con);

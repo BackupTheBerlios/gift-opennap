@@ -24,7 +24,7 @@
 #include "opn_upload.h"
 #include "opn_hash.h"
 
-Protocol *opn_proto = NULL;
+Protocol *OPN = NULL;
 
 BOOL opn_is_connected()
 {
@@ -71,8 +71,8 @@ static BOOL opn_connect(void *udata)
 
 void main_timer()
 {
-	OPENNAP->timer_connect = timer_add(30 * SECONDS,
-	                          (TimerCallback) opn_connect, NULL);
+	OPENNAP->timer_connect = timer_add(30 * SECONDS, opn_connect,
+	                                   NULL);
 }
 
 static int gift_cb_stats(Protocol *p, unsigned long *users,
@@ -114,11 +114,12 @@ static Config *config_load()
 }
 
 /**
- * Creates a random username and stores it in OPENNAP->cfg
+ * Creates a random username
+ *
+ * @param buf String the username is stored in
  */
-static void set_username()
+static void set_username(char buf[16])
 {
-	char buf[16];
 	int i, x;
 
 	srand(time(NULL));
@@ -133,12 +134,12 @@ static void set_username()
 	}
 
 	buf[i] = 0;
-
-	config_set_str(OPENNAP->cfg, "main/username", buf);
 }
 
 static BOOL gift_cb_start(Protocol *p)
 {
+	char alias[16];
+	
 	if (!(OPENNAP->cfg = config_load())) {
 		GIFT_ERROR(("Can't load OpenNap configuration!"));
 		return FALSE;
@@ -151,8 +152,14 @@ static BOOL gift_cb_start(Protocol *p)
 	input_add(OPENNAP->con->fd, NULL, INPUT_READ, opn_upload_connect,
 	          TIMEOUT_DEF);
 #endif
-	
-	set_username();
+
+	if (OPENNAP_RANDOM_USERNAME) {
+		set_username(alias);
+		config_set_str(OPENNAP->cfg, "main/alias", alias);
+	}
+
+	if (OPENNAP_LOCAL_MODE)
+		config_set_int(OPENNAP->cfg, "main/max_connections", 1);
 
 	OPENNAP->nodelist = opn_nodelist_new();
 
@@ -170,7 +177,8 @@ static void gift_cb_destroy(Protocol *p)
 	if (!OPENNAP)
 		return;
 
-	timer_remove(OPENNAP->timer_connect);
+	if (OPENNAP->timer_connect)
+		timer_remove(OPENNAP->timer_connect);
 
 #if 0
 	opn_nodelist_save(OPENNAP->nodelist);
@@ -229,7 +237,7 @@ BOOL OpenNap_init(Protocol *p)
 	__asm__ __volatile__ ("int $03");
 #endif
 	 
-	opn_proto = p;
+	OPN = p;
 
 	if (!(plugin = malloc(sizeof(OpnPlugin))))
 		return FALSE;

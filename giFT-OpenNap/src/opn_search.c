@@ -104,7 +104,7 @@ void opn_search_free(OpnSearch *search)
 	string_freev(search->exclude);
 	timer_remove(search->timer);
 
-	opn_proto->search_complete(opn_proto, search->event);
+	OPN->search_complete(OPN, search->event);
 	free(search);
 }
 

@@ -32,7 +32,7 @@
 #define OPN_PACKET_HEADER_LEN 4 
 
 typedef struct _OpnPacket {
-	OpnCommand cmd;
+	OpnCommand cmd; /**< command */
 	
 	char *data; /**< payload */
 	uint16_t data_size; /**< payload's size */

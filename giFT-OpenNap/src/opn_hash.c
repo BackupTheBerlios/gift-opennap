@@ -17,6 +17,12 @@
 
 #include "opn_opennap.h"
 
+typedef struct {
+	uint32_t buf[4];
+	uint32_t bits[2];
+	uint8_t in[64];
+} MD5Context;
+
 #ifndef WORDS_BIGENDIAN
 # define byte_reverse(buf, len) /* Nothing */
 #else /* WORDS_BIGENDIAN */
@@ -37,12 +43,6 @@ void byte_reverse(uint8_t *buf, uint32_t longs)
 	} while (--longs);
 }
 #endif /*! WORDS_BIGENDIAN */
-
-typedef struct {
-	uint32_t buf[4];
-	uint32_t bits[2];
-	uint8_t in[64];
-} MD5Context;
 
 /*
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
@@ -282,6 +282,7 @@ static char *hash_human(uint8_t *hash)
 /**
  * Hashes the first 299008 bytes of a file
  * @param file File to be hashed
+ * @param len Filled with the length of the hash in bytes
  * @return Hash of the first 299008 bytes of \em file. Should be freed.
  */
 uint8_t *opn_hash(const char *file, size_t *len)

@@ -101,9 +101,9 @@ static void on_download_read_data(int fd, input_id input, void *udata)
 	if ((bytes = tcp_recv(download->con, buf, sizeof(buf))) <= 0)
 		opn_download_free(download);
 
-	opn_proto->chunk_write(opn_proto, download->chunk->transfer,
-	                       download->chunk, download->chunk->source,
-	                       buf, bytes);
+	OPN->chunk_write(OPN, download->chunk->transfer,
+	                 download->chunk, download->chunk->source,
+	                 buf, bytes);
 }
 
 static void on_download_read_filesize(int fd, input_id input, void *udata)
@@ -152,7 +152,7 @@ static void on_download_write(int fd, input_id input, void *udata)
 	tcp_send(download->con, "GET", 3);
 
 	snprintf(buf, sizeof(buf), "%s \"%s\" %lu",
-	         OPENNAP_USERNAME, download->url->file,
+	         OPENNAP_ALIAS, download->url->file,
 	         download->chunk->start + download->chunk->transmit);
 
 	tcp_send(download->con, buf, strlen(buf));

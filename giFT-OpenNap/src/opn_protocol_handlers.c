@@ -26,7 +26,7 @@ OPN_HANDLER(login_error)
 	assert(udata);
 
 #ifdef OPENNAP_DEBUG
-	printf("%s\n", data);
+	OPN->DBGFN(OPN, "login error: %s\n", data);
 #endif
 
 	OPENNAP->sessions = list_remove(OPENNAP->sessions, udata);
@@ -40,8 +40,8 @@ OPN_HANDLER(login_ack)
 	assert(session);
 	
 	session->node->connected = TRUE;
-
-	if (opn_share_enabled && !opn_share_syncing)
+	
+	if (opn_share_enabled() && !opn_share_syncing())
 		opn_share_refresh(session);
 }
 
@@ -61,7 +61,7 @@ OPN_HANDLER(stats)
 OPN_HANDLER(error)
 {
 #ifdef OPENNAP_DEBUG
-	printf("%s\n", data);
+	OPN->DBGFN(OPN, "error: %s\n", data);
 #endif
 }
 
@@ -153,9 +153,9 @@ OPN_HANDLER(search_result)
 	opn_url_set_client(&url, user, ip, 0);
 	opn_url_set_server(&url, session->node->ip, session->node->port);
 
-	opn_proto->search_result(opn_proto, search->event,
-	                         user, NULL, opn_url_serialize(&url),
-	                         1, &share);
+	OPN->search_result(OPN, search->event,
+	                   user, NULL, opn_url_serialize(&url),
+	                   1, &share);
 
 	share_finish(&share);
 

@@ -116,11 +116,11 @@ static char *url_decode(char *encoded)
 }
 
 /* stolen from OpenFT ;) */
-static char *url_encode_char(char *stream, unsigned char c)
+static char *url_encode_char(char *stream, uint8_t c)
 {
 	*stream++ = '%';
 
-	sprintf(stream, "%02x", (unsigned int) c);
+	sprintf(stream, "%02x", (uint32_t) c);
 
 	return stream + 2;
 }
