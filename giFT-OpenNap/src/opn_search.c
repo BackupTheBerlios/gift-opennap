@@ -37,7 +37,9 @@ OpnSearch *opn_search_new()
 	memset(search, 0, sizeof(OpnSearch));
 
 	opn_search_ref(search);
-	search->timer = timer_add(90 * SECONDS, (TimerCallback) search_remove, search);
+	search->timer = timer_add(90 * SECONDS,
+	                          (TimerCallback) search_remove, search);
+
 	OPENNAP->searches = list_prepend(OPENNAP->searches, search);
 
 	return search;
@@ -57,16 +59,14 @@ void opn_search_free(OpnSearch *search)
 
 uint32_t opn_search_ref(OpnSearch *search)
 {
-	if (!search)
-		return 0;
+	assert(search);
 
 	return ++search->ref;
 }
 
 uint32_t opn_search_unref(OpnSearch *search)
 {
-	if (!search)
-		return 0;
+	assert(search);
 
 	if (!--search->ref) {
 		opn_search_free(search);
@@ -154,8 +154,8 @@ BOOL gift_cb_search(Protocol *p, IFEvent *event, char *query, char *exclude,
 			continue;
 
 		snprintf(buf, sizeof(buf),
-		        "MAX_RESULTS %i FILENAME CONTAINS \"%s\"",
-				OPN_MAX_SEARCH_RESULTS, query);
+		         "MAX_RESULTS %i FILENAME CONTAINS \"%s\"",
+		         OPN_MAX_SEARCH_RESULTS, query);
 
 		if (!(packet = opn_packet_new(OPN_CMD_SEARCH, buf, strlen(buf))))
 			continue;

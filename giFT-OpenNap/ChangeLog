@@ -1,8 +1,9 @@
-2003-06-15 Tilman Sauerbeck <tilman@code-monkey.de>
+2003-06-16 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: Free searches on exit
         * src/opn_protocol_handlers: Search result fixes
         * src/opn_search.[ch]: Searches are automatically removed now
         * src/opn_session.c: Fixed opn_session_find()
+        * README: Updated documentation
 
 2003-06-14 Tilman Sauerbeck <tilman@code-monkey.de>
         * src/opn_opennap.c: Fixed compilation error

@@ -160,12 +160,11 @@ static void on_napigator_connect(int fd, input_id input, OpnNodeList *nodelist)
 
 void opn_nodelist_refresh(OpnNodeList *nodelist)
 {
-	if (!nodelist)
-		return;
+	assert(nodelist);
 
 	if (nodelist->con)
 		tcp_close(nodelist->con);
-		
+
 	/* FIXME lookup the ip of www.napigator.com here ;) */
 	if (!(nodelist->con = tcp_open(net_ip("216.116.119.192"), 80, FALSE)))
 		return;
@@ -181,9 +180,8 @@ BOOL opn_nodelist_save(OpnNodeList *nodelist)
 	FILE *fp;
 	char *file = gift_conf_path("OpenNap/nodelist");
 
-	if (!nodelist)
-		return FALSE;
-	
+	assert(nodelist);
+
 	if (!(fp = fopen(file, "w")))
 		return FALSE;
 
@@ -203,8 +201,7 @@ BOOL opn_nodelist_load(OpnNodeList *nodelist)
 	char ip[16], *buf = NULL;
 	in_port_t port;
 
-	if (!nodelist)
-		return FALSE;
+	assert(nodelist);
 	
 	if (!(fp = fopen(file, "r")))
 		return FALSE;
