@@ -12,6 +12,7 @@ AH_VERBATIM([_GNU_SOURCE], [/* Enable GNU extensions on systems that have them. 
 ])
 
 AC_PROG_CC
+AC_C_BIGENDIAN
 AM_DISABLE_STATIC
 AC_PROG_LIBTOOL
  

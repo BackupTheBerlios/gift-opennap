@@ -85,6 +85,7 @@ void opn_packet_free(OpnPacket *packet)
 static unsigned char *packet_serialize(OpnPacket *packet, long *ssize)
 {
 	uint16_t foo;
+	int bar;
 	
 	if (!packet)
 		return NULL;
@@ -96,12 +97,10 @@ static unsigned char *packet_serialize(OpnPacket *packet, long *ssize)
 		return NULL;
 
 	/* size and type are always in little-endian format */
-	foo = packet->data_size;
-	//me2le_16(foo);
+	foo = BSWAP16(packet->data_size);
 	memcpy(packet->serialized, &foo, 2);
 
-	foo = packet->cmd;
-	//me2le_16(foo);
+	foo = BSWAP16(packet->cmd);
 	memcpy(&packet->serialized[2], &foo, 2);
 
 	if (packet->data_size)
@@ -129,9 +128,12 @@ OpnPacket *opn_packet_unserialize(unsigned char *data, uint16_t size)
 
 	memset(packet, 0, sizeof(OpnPacket));
 
-	/* FIXME endianess! */
+	/* size and type are always in little-endian format */
 	memcpy(&packet->data_size, data, 2);
+	packet->data_size = BSWAP16(packet->data_size);
+
 	memcpy(&packet->cmd, &data[2], 2);
+	packet->cmd = BSWAP16(packet->cmd);
 	
 	if ((size -= OPN_PACKET_HEADER_LEN)) {
 		if (!(packet->data = malloc(size + 1))) {
@@ -175,13 +177,13 @@ BOOL opn_packet_recv(TCPC *con, void *udata)
 	unsigned char buf[2048];
 	int bytes;
 	uint16_t len;
-	
-	/* get the length field of the message
-	 * FIXME: endianess!
+
+	/* get the length field of the message:
+	 * always in little-endian format
 	 */
 	tcp_peek(con, (unsigned char *) &len, 2);
 	
-	len = MIN(len + OPN_PACKET_HEADER_LEN, sizeof(buf));
+	len = MIN(BSWAP16(len) + OPN_PACKET_HEADER_LEN, sizeof(buf));
 
 	if ((bytes = tcp_recv(con, buf, len)) < OPN_PACKET_HEADER_LEN)
 		return FALSE;

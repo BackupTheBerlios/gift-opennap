@@ -44,7 +44,8 @@ static BOOL opn_connect(timer_id *timer)
 	OpnNode *node;
 	List *l;
 
-	if (list_length(OPENNAP->sessions) >= OPENNAP_MAX_CONNECTIONS)
+	if (list_length(OPENNAP->sessions) >=
+	    config_get_int(OPENNAP->cfg, "main/max_connections=15"))
 		return TRUE;
 	
 	for (l = OPENNAP->nodelist->nodes; l; l = l->next) {

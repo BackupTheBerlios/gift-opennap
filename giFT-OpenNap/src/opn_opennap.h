@@ -63,5 +63,15 @@ extern Protocol *opn_proto;
 #define OPENNAP_DATAPORT config_get_int(OPENNAP->cfg, "main/dataport=6699")
 #define OPENNAP_CLIENTNAME "giFT-OpenNap"
 
+#ifdef WORDS_BIGENDIAN
+#define BSWAP16(x) (((x) & 0x00ff) << 8 | ((x) & 0xff00) >> 8)
+#define BSWAP32(x) \
+	((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) | \
+	(((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24))
+#else
+#define BSWAP16(x) (x)
+#define BSWAP32(x) (x)
+#endif
+	
 #endif
 
