@@ -11,8 +11,7 @@ currently.
 Status
 ======
 
-Searching works, downloading is on it's way, but uploading stuff
-doesn't work yet.
+Searching works, downloading and uploading stuff is on it's way.
 
 It's known to work on:
 Linux 2.4 on x86
@@ -28,6 +27,9 @@ Just run the usual commands:
   ./autogen.sh
   make
   make install
+
+If it doesn't compile, update the code from CVS and update giFT, then
+try again.
 
 You'll also need to tell giFT you'd like to use this plugin:
 Open ~/.giFT/gift.conf and add "OpenNap" to the line that starts with
