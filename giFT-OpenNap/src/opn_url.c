@@ -187,10 +187,28 @@ OpnUrl *opn_url_unserialize(char *data)
 	if (!(url = opn_url_new()))
 		return NULL;
 
-	sscanf(data, "OpenNap://%u:%hu@%u:%hu",
-			&url->client.ip, &url->client.port,
-			&url->server.ip, &url->server.port);
+	sscanf(data, "OpenNap://%*u:%hu@%*u:%hu",
+	       &url->client.port, &url->server.port);
 
+	/* get the client's ip */
+	assert((ptr = strstr(data, "OpenNap://")));
+	ptr += 10;
+	assert((ptr2 = strchr(ptr, ':')));
+	ptr2++;
+
+	snprintf(buf, MIN(ptr2 - ptr, sizeof(buf)), "%s", ptr);
+	url->client.ip = net_ip(buf);
+
+	/* get the server's ip */
+	assert((ptr = strchr(data, '@')));
+	ptr++;;
+	assert((ptr2 = strchr(ptr, ':')));
+	ptr2++;
+
+	snprintf(buf, MIN(ptr2 - ptr, sizeof(buf)), "%s", ptr);
+	url->server.ip = net_ip(buf);
+
+	/* get file data */
 	assert((ptr = strstr(data, "user=")));
 	assert((ptr2 = strstr(data, "&size=")));
 	ptr += 5;
@@ -212,17 +230,18 @@ OpnUrl *opn_url_unserialize(char *data)
 
 char *opn_url_serialize(OpnUrl *url)
 {
-	char *user, *file;
+	char *user, *file, client[16];
 	
 	assert(url);
 
 	user = url_encode(url->user);
 	file = url_encode(url->file);
+	snprintf(client, sizeof(client), "%s", net_ip_str(url->client.ip));
 
-	url->serialized = stringf_dup("OpenNap://%u:%hu@%u:%hu?user=%s"
+	url->serialized = stringf_dup("OpenNap://%s:%hu@%s:%hu?user=%s"
 	                              "&size=%u&file=%s",
-	                              url->client.ip, url->client.port,
-	                              url->server.ip, url->server.port,
+	                              client, url->client.port,
+	                              net_ip_str(url->server.ip), url->server.port,
 	                              user, url->size, file);
 
 	free(user);
