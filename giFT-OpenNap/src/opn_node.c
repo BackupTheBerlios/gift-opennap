@@ -108,8 +108,6 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 		return;
 	}
 	
-	memset(buf, 0, sizeof(buf));
-
 	if ((bytes = tcp_recv(nodelist->con, buf, sizeof(buf) - 1)) <= 0) {
 		/* so now we got our serverlist... connect! */
 		tcp_close(nodelist->con);
@@ -125,7 +123,7 @@ static void on_napigator_read(int fd, input_id input, void *udata)
 			return;
 	}
 	
-	while (sscanf(ptr, "%s %hu %*[^\n]", ip, &port) == 2) {
+	while (sscanf(ptr, "%16s %hu %*[^\n]", ip, &port) == 2) {
 		if (port)
 			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip), port));
 		
@@ -191,7 +189,7 @@ static void nodelist_load_local(OpnNodeList *nodelist)
 		return;
 
 	while (file_read_line(fp, &buf))
-		if (sscanf(buf, "%[^:]:%hu", ip, &port) == 2)
+		if (sscanf(buf, "%16[^:]:%hu", ip, &port) == 2)
 			opn_nodelist_node_add(nodelist, opn_node_new(net_ip(ip), port));
 
 	return;

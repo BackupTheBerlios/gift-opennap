@@ -100,7 +100,7 @@ static void on_upload_read(int fd, input_id input, void *udata)
 
 	input_remove(input);
 
-	sscanf(buf, "%s \"%s\" %lu", user, file, &offset);
+	sscanf(buf, "%64s \"%PATH_MAXs\" %lu", user, file, &offset);
 	
 	if (!(share = share_find_file(file))) {
 		tcp_close(con);
