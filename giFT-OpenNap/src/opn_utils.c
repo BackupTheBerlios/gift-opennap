@@ -18,6 +18,20 @@
 #include "opn_opennap.h"
 #include <ctype.h>
 
+#ifndef HAVE_STRCASESTR
+char *opn_strcasestr(const char *haystack, const char *needle)
+{
+	const char *ptr;
+	size_t len = strlen(needle);
+
+	for (ptr = haystack; ptr && *ptr; ptr++)
+		if (!strncasecmp(ptr, needle, len))
+			return (char *) ptr;
+
+	return NULL;
+}
+#endif
+
 char *opn_unix_path(char *path)
 {
 	char *unix_path;

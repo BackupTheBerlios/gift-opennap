@@ -26,5 +26,11 @@ void opn_string_freev(char **str);
 char *opn_url_encode(char *decoded);
 char *opn_url_decode(char *encoded);
 
+#ifdef HAVE_STRCASESTR
+# define opn_strcasestr strcasestr
+#else
+char *opn_strcasestr(const char *haystack, const char *needle);
+#endif
+
 #endif
 

@@ -94,7 +94,7 @@ static BOOL file_cmp_query(char *file, char **query)
 		return FALSE;
 
 	for (ptr = query; *ptr; ptr++)
-		if (strcasestr(file, *ptr))
+		if (opn_strcasestr(file, *ptr))
 			return TRUE;
 
 	return FALSE;

@@ -6,6 +6,8 @@
         * README, src/opn_node.[ch], src/opn_opennap.[ch]:
           Updated nodelist loading. Local nodelist is now loaded in
           any case but Napigator-querying can be disabled.
+        * src/utils.[ch], src/opn_search.c: Added opn_strcasestr()
+          for systems which don't have strcasestr()
 
 2003-06-26 Tilman Sauerbeck <tilman@code-monkey.de>
         * Servers for local mode are now specified in
